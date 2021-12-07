@@ -1,23 +1,5 @@
 #!/bin/bash
-# list installed groups
-
-#{ pacman -Qg $(
-#
-#for G in $(pacman -Qg | cut -d' ' -f1 | sort -u); do
-#
-#    Sgq=$(pacman -Sgq "$G")		# package list of current group
-#    Qgq=$(pacman -Qgq "$G")		# packages installed from current group
-#
-#    if	[[ $Sgq == $Qgq ]] && \
-#        grep -q "Running 'pacman.*-S[yu]* $G" /var/log/pacman.log
-#        then
-#        echo "${G}"
-#    fi
-#
-#    done
-#) | cut -f 2 -d ' ' - && 
-#
-#    pacman -Qe | cut -f 1 -d ' ' -; } | sort | uniq -u
+# list installed groups and standalone packages
 
 groups=$(for G in $(pacman -Qg | cut -d' ' -f1 | sort -u); do
 
