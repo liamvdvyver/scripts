@@ -3,15 +3,29 @@
 # Copies theme configuration from .Xresources to neovim, kitty, dunst, i3wm, and
 # sets corresponding wallpaper with nitrogen
 #
+# Usage: theme.sh [--toggle] [theme [--light]]
+#
 # NOTE: when specifying the layout of config files, ^ and $ are used to denote
 # the start and end of lines
 
 # INITAL VARIABLES --------------------------------------------------------- {{{
 
-# The theme is given to the script as positional argument $1, defaulting to a
-# speicified theme if no argument is given (gruvbox)
+# $1 should be either a theme, or --toggle
 
-theme=${1-gruv}
+if [ $1 ] && [ $1 = "--toggle" ]; then
+    toggle=1
+else
+    theme=${1-gruv}
+fi
+    
+# Set $bg to light or dark and adjust theme accordingly
+
+if [ $theme ] && [ $2 ] &&  [ $2 = "--light" ]; then
+    bg=light
+    theme=$theme"L"
+elif [ $theme ]; then
+    bg=dark
+fi
 
 # $warningline is placed in files to be overwritten by the script
 
@@ -28,6 +42,10 @@ warningline="# FOLLOWING LINES WILL BE OVERWRITTEN"
 # ^! [xtheme] [vimtheme] !$
 #
 # where the xtheme is given as $theme, all lowercase letters.
+# Uppercase L is reserved for light verstions of a theme:
+#
+# ^! [xthemeL] [vimtheme] !$
+#
 # The pallette should be defined by variables in format: 
 #
 # ^#define xtheme_colour #XXXXXX$
@@ -92,6 +110,19 @@ if [ ! -f $xres ]; then
     exit
 fi
 
+# If $toggle = 1, find current theme and toggle xtheme <-> xthemeL, set $bg:
+
+if [ $toggle ] &&  [ $toggle = 1 ]; then
+    oldtheme=$(cat .Xresources | grep "#define fg [a-zL]\+fg" | sed "s/#define fg \([a-zL]\+\)fg/\1/")
+    if [ $(echo $oldtheme | grep "L") ]; then
+        theme=$(echo $oldtheme | sed "s/L//")
+        bg=dark
+    else
+        theme=$oldtheme"L"
+        bg=light
+    fi
+fi
+
 # Set $xtheme to $theme if it is found in line specified format, and exit if it
 # is not set (invalid input/Xresources layout):
 
@@ -105,8 +136,8 @@ fi
 # Overall variables are then set from xtheme variables as specified,
 # by finding and replacing corresponding lines with the current $xtheme:
 
-sed -i "s/^\(#define c\)\([0-9]\{2\}\) [a-z]\+\2$/\1\2 $xtheme\2/" $xres
-sed -i "s/^\(#define \)\([a-z]\{2\}[0-9]\?\)\s[a-z]\+\2$/\1\2 $xtheme\2/" $xres
+sed -i "s/^\(#define c\)\([0-9]\{2\}\) [a-zL]\+\2$/\1\2 $xtheme\2/" $xres
+sed -i "s/^\(#define \)\([a-z]\{2\}[0-9]\?\)\s[a-zL]\+\2$/\1\2 $xtheme\2/" $xres
 
 # Update the Xresources database:
 
@@ -126,10 +157,12 @@ if [ -f $vimconf ]; then
     vimtheme=$(cat $xres | grep "^\! $theme [a-z0-9]\+ \!$" | cut -s -d ' ' -f 3)
 fi
 
-# If $vimtheme was found, replace current setting in $vimconf:
+# If $vimtheme was found, replace current setting in $vimconf for colorscheme
+# and background:
 
 if [ -n "$vimtheme" ]; then
-    sed -i "s/^\(colorscheme \)[a-z0-9]*$/\1$vimtheme/" $vimconf
+    sed -i "s/^\(colorscheme \)[a-z0-9]\+$/\1$vimtheme/" $vimconf
+    sed -i "s/^\(set background=\)[a-z]\+$/\1$bg/" $vimconf
 fi
 
 # }}}
