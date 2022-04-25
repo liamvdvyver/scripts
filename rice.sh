@@ -10,40 +10,40 @@
 
 usage="usage: rice.sh <theme> [--light] [--dark] [--toggle]"
 
-if [ -z $1 ]; then
+# Intended usage:
+# rice.sh [theme] -> $theme set to $1
+# rice.sh [theme] [--light OR --dark] -> $theme set to $1, $bg set per $2
+# rice.sh [--toggle] -> $toggle set to $1
+# rice.sh [--light OR --dark] -> $toggle set to 2, $bg set per $1
+
+if [ -z "$1" ]; then # No arguments -> usage warning
     echo "$usage"
     exit
-elif [ $1 = "--toggle" ]; then
-    toggle=1
-elif [ $1 = "--light" ]; then
-    toggle=2
+elif [ "$1" = "--toggle" ]; then # --toggle -> set $toggle to 1
+    toggle="1"
+elif [ "$1" = "--light" ]; then # --light -> set $toggle to 2, light $bg
+    toggle="2"
     bg="light"
-elif [ $1 = "--dark" ]; then
-    toggle=2
+elif [ "$1" = "--dark" ]; then # --dark -> set $toggle to 2, dark $bg
+    toggle="2"
     bg="dark"
-elif [ $1 ]; then
-    theme=$1
-else
-    echo "$usage"
-    exit
+elif [ "$1" ]; then # other argument -> set $theme to argument
+    theme="$1"
 fi
     
-# Set $bg to light or dark and adjust theme accordingly
-
-if [ $2 ] && [ $theme ] && [ $2 = "--light" ]; then
-    bg=light
-    theme=$theme"L"
-elif [ $2 ] && [ $theme ] && [ $2 = "--dark" ]; then
-    bg=dark
-elif [ $2 ]; then
+if [ "$theme" ] && [ -z "$2" ]; then # no $2, theme set -> default to dark $bg
+    bg="dark"
+elif [ "$theme" ] && [ "$2" = "--light" ]; then # --light, theme set -> set
+    bg="light"                                  # -> $theme and $bg as per spec
+    theme="$theme""L"
+elif [ "$theme" ] && [ "$2" = "--dark" ]; then # --dark, theme set -> set dark $bg
+    bg="dark"
+elif [ "$2" ]; then # invalid $2 -> usage warning
     echo "$usage"
     exit
-elif [ $theme ]; then
-    bg=dark
 fi
 
 # $warningline is placed in files to be overwritten by the script
-
 warningline="# FOLLOWING LINES WILL BE OVERWRITTEN"
 
 # }}}
@@ -116,11 +116,9 @@ warningline="# FOLLOWING LINES WILL BE OVERWRITTEN"
 
 # ---- }}}
 
-# Set the location of .Xresources, and exit if it does not exist:
+xres=~/.Xresources # location of Xresources config
 
-xres=~/.Xresources
-
-if [ ! -f $xres ]; then
+if [ ! -f $xres ]; then # warn if not found (required for script)
     echo "no Xresources configuration found at $xres"
     exit
 fi
@@ -128,28 +126,28 @@ fi
 # If $toggle = 1, find current theme and toggle xtheme <-> xthemeL, set $bg:
 # If $toggle = 2, find current theme and switch to variant set by $bg already
 
-if [ $toggle ]; then
-    oldtheme=$(cat .Xresources | grep "#define fg [a-zL]\+fg" | sed "s/#define fg \([a-zL]\+\)fg/\1/")
-    if [ $(echo $oldtheme | grep "L") ]; then # Remove L from $oldtheme and set $oldbg
-        oldtheme="$(echo $oldtheme | sed "s/L//")"
-        oldbg=light
+if [ "$toggle" ]; then # if toggle is set, set $oldtheme literally
+    oldtheme="$(grep "#define fg [a-zL]\+fg" $xres | sed "s/#define fg \([a-zL]\+\)fg/\1/")"
+    if echo "$oldtheme" | grep -q "L"; then # if $oldtheme is light
+        oldtheme="$(echo "$oldtheme" | sed "s/L//")" # set to basic form
+        oldbg="light" # and set $oldbg to light
     else
-        oldbg="dark"
+        oldbg="dark" # if $oldtheme dark, set $oldbg to dark
     fi
-    if [ $toggle = "1"  ]; then # If toggling, set $theme and $bg accordingly
-        if [ $oldbg = "dark" ]; then
-            theme=$oldtheme"L"
-            bg=light
+    if [ "$toggle" = "1"  ]; then # toggling between dark and light
+        if [ "$oldbg" = "dark" ]; then
+            theme="$oldtheme""L"
+            bg="light"
         else
-            theme=$oldtheme
-            bg=dark
+            theme="$oldtheme"
+            bg="dark"
         fi
     fi
-    if [ $toggle = "2" ]; then # If switching to specified bg, set theme
-        if [ $bg = "light" ]; then
-            theme=$oldtheme"L"
-        elif [ $bg = "dark" ]; then
-            theme=$oldtheme
+    if [ "$toggle" = "2" ]; then # If switching to specified $bg, set theme
+        if [ "$bg" = "light" ]; then
+            theme="$oldtheme""L"
+        elif [ "$bg" = "dark" ]; then
+            theme="$oldtheme"
         fi
     fi
 fi
@@ -157,7 +155,7 @@ fi
 # Set $xtheme to $theme if it is found in line specified format, and exit if it
 # is not set (invalid input/Xresources layout):
 
-xtheme=$(cat $xres | grep "^\! $theme [a-z0-9]\+ \!$" | cut -s -d ' ' -f 2)
+xtheme="$(cat $xres | grep "^\! $theme [a-z0-9]\+ \!$" | cut -s -d ' ' -f 2)"
 
 if [ -z "$xtheme" ]; then
     echo "Please select a valid theme from .Xresources"
@@ -170,28 +168,22 @@ fi
 sed -i "s/^\(#define c\)\([0-9]\{2\}\) [a-zL]\+\2$/\1\2 $xtheme\2/" $xres
 sed -i "s/^\(#define \)\([a-z]\{2\}[0-9]\?\)\s[a-zL]\+\2$/\1\2 $xtheme\2/" $xres
 
-# Update the Xresources database:
-
-xrdb $xres
+xrdb $xres # update xrdb for later
 
 # }}}
 
 # SET VIM COLORSCHEME ------------------------------------------------------ {{{
 
-# Set location of vim config containing colouscheme setting:
+vimconf=~/.config/nvim/init.vim # set location of MYVIMRC
 
-vimconf=~/.config/nvim/init.vim
-
-# If the file exists, set $vimtheme from .Xresources in specified format:
-
-if [ -f $vimconf ]; then
-    vimtheme=$(cat $xres | grep "^\! $theme [a-z0-9]\+ \!$" | cut -s -d ' ' -f 3)
+if [ -f $vimconf ]; then # set vimtheme from $xres if $vimconf exists
+    vimtheme="$(cat $xres | grep "^\! $theme [a-z0-9]\+ \!$" | cut -s -d ' ' -f 3)"
 fi
 
 # If $vimtheme was found, replace current setting in $vimconf for colorscheme
 # and background:
 
-if [ -n "$vimtheme" ]; then
+if [ "$vimtheme" ]; then
     sed -i "s/^\(colorscheme \)[a-z0-9]\+$/\1$vimtheme/" $vimconf
     sed -i "s/^\(set background=\)[a-z]\+$/\1$bg/" $vimconf
 fi
@@ -200,9 +192,7 @@ fi
 
 # SET KITTY COLOURS -------------------------------------------------------- {{{
 
-# Set location of kitty config file:
-
-kittyconf=~/.config/kitty/kitty.conf
+kittyconf=~/.config/kitty/kitty.conf # set location of kitty config
 
 # Regex to match *colorDD, *background, *foregound, *cursorColor from Xresources
 # database:
@@ -215,7 +205,7 @@ kittyregex='^\*\(color[0-9]\{1,2\}\|background\|foreground\|cursorColor\):\s#[a-
 #
 # ^*cursorColor: #XXXXXX$ --> ^cursor #XXXXXX$
 
-if [ -f $kittyconf ] && [ -n "$(grep "^$warningline$" $kittyconf)" ]; then
+if [ -f $kittyconf ] && grep -q "^$warningline$" $kittyconf; then
     sed -i "/^$warningline$/q" $kittyconf
     echo "" >> $kittyconf
     xrdb -query | grep "$kittyregex" |cut -c 2- | sed "s/:\s/ /" | sed -r "s/^cursorColor/cursor/" >> $kittyconf
@@ -225,12 +215,9 @@ fi
 
 # SET DUNST COLOURS -------------------------------------------------------- {{{
 
-# Set location of dunst config file:
-
-dunstconf=~/.config/dunst/dunstrc
+dunstconf=~/.config/dunst/dunstrc # set dunst config location
 
 # Set $dunstXX from Xresources database:
-
 dunstbg=$(xrdb -query | grep '^\*background:\s#[a-zA-Z0-9]\{6\}$' | cut -f 2)
 dunstfg=$(xrdb -query | grep '^\*foreground:\s#[a-zA-Z0-9]\{6\}$' | cut -f 2)
 dunstwi=$(xrdb -query | grep '^\*windowi:\s#[a-zA-Z0-9]\{6\}$' | cut -f 2)
@@ -238,7 +225,6 @@ dunstwf=$(xrdb -query | grep '^\*windowf:\s#[a-zA-Z0-9]\{6\}$' | cut -f 2)
 dunstwu=$(xrdb -query | grep '^\*windowu:\s#[a-zA-Z0-9]\{6\}$' | cut -f 2)
 
 # Set $dunstXXline in appropriate format for $dunstconf:
-
 dunstbgline="    background = \"$dunstbg\""
 dunstfgline="    foreground = \"$dunstfg\""
 dunstwiline="    frame_color = \"$dunstwi\""
@@ -248,23 +234,25 @@ dunstwuline="    frame_color = \"$dunstwu\""
 # If the $warningline line is matched, delete all following lines and replace
 # with $dunstXXline in appopriate sections:
 
-if [ -f $dunstconf ] && [ -n "$(grep "^$warningline$" $dunstconf)" ]; then
+if [ -f $dunstconf ] && grep -q "^$warningline$" $dunstconf; then
     sed -i "/^$warningline$/q" $dunstconf
-    echo "" >> $dunstconf
-    echo "[urgency_low]" >> $dunstconf
-    echo $dunstbgline >> $dunstconf
-    echo $dunstfgline >> $dunstconf
-    echo $dunstwiline >> $dunstconf
-    echo "" >> $dunstconf
-    echo "[urgency_normal]" >> $dunstconf
-    echo $dunstbgline >> $dunstconf
-    echo $dunstfgline >> $dunstconf
-    echo $dunstwfline >> $dunstconf
-    echo "" >> $dunstconf
-    echo "[urgency_critical]" >> $dunstconf
-    echo $dunstbgline >> $dunstconf
-    echo $dunstfgline >> $dunstconf
-    echo $dunstwuline >> $dunstconf
+    {
+        echo ""
+        echo "[urgency_low]"
+        echo "$dunstbgline"
+        echo "$dunstfgline"
+        echo "$dunstwiline"
+        echo ""
+        echo "[urgency_normal]"
+        echo "$dunstbgline"
+        echo "$dunstfgline"
+        echo "$dunstwfline"
+        echo ""
+        echo "[urgency_critical]"
+        echo "$dunstbgline"
+        echo "$dunstfgline"
+        echo "$dunstwuline"
+    } >> $dunstconf
 fi
 
 # }}}
@@ -272,10 +260,9 @@ fi
 # SET NITROGEN WALLPAPER --------------------------------------------------- {{{
 
 # Set niteogen config location and regex for wallpaper directory:
-
 nitrogenconf=~/.config/nitrogen/bg-saved.cfg
 papedir='/home/lvdv/drive/Pictures/Wallpapers/themes/'
-papedirregex=$(echo $papedir | sed 's/\//\\\//g')
+papedirregex="$(echo $papedir | sed 's/\//\\\//g')"
 
 # If config is found and file exists names $theme, replace old theme.jpg with
 # current $theme.jpg in config:
@@ -290,17 +277,13 @@ fi
 
 # Restart i3
 
-# If i3-msg is installed, restart:
+if [ "$(command -v i3-msg)" ]; then i3-msg restart; fi # restart i3 if installed
 
-if [ $(command -v i3-msg) ]; then i3-msg restart; fi
-
-# Send SIGUSR1 to runnin kitty instances (reloads config)
-
+# Send SIGUSR1 to runnin kitty instances (reloads config):
 pgrep kitty | xargs kill -s USR1
 
-# Find nvim server sockets and remote send command to reload config
-
-nvim_socks=$(find /tmp/ -regex "/tmp/nvim[a-zA-Z0-9]+/0" -print 2>/dev/null | paste -s -d ' ')
-echo $nvim_socks | xargs -r -n 1 nvim --remote-send ':source $MYVIMRC<CR>' --server
+# Find nvim server sockets and remote send command to reload config:
+nvim_socks="$(find /tmp/ -regex "/tmp/nvim[a-zA-Z0-9]+/0" -print 2>/dev/null | paste -s -d ' ')"
+echo "$nvim_socks" | xargs -r -n 1 nvim --remote-send ':source $MYVIMRC<CR>' --server
 
 # }}}
