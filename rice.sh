@@ -225,11 +225,11 @@ dunstwf=$(xrdb -query | grep '^\*windowf:\s#[a-zA-Z0-9]\{6\}$' | cut -f 2)
 dunstwu=$(xrdb -query | grep '^\*windowu:\s#[a-zA-Z0-9]\{6\}$' | cut -f 2)
 
 # Set $dunstXXline in appropriate format for $dunstconf:
-dunstbgline="    background = \"$dunstbg\""
-dunstfgline="    foreground = \"$dunstfg\""
-dunstwiline="    frame_color = \"$dunstwi\""
-dunstwfline="    frame_color = \"$dunstwf\""
-dunstwuline="    frame_color = \"$dunstwu\""
+dunstbgline="background = \"$dunstbg\""
+dunstfgline="foreground = \"$dunstfg\""
+dunstwiline="frame_color = \"$dunstwi\""
+dunstwfline="frame_color = \"$dunstwf\""
+dunstwuline="frame_color = \"$dunstwu\""
 
 # If the $warningline line is matched, delete all following lines and replace
 # with $dunstXXline in appopriate sections:
@@ -237,21 +237,21 @@ dunstwuline="    frame_color = \"$dunstwu\""
 if [ -f $dunstconf ] && grep -q "^$warningline$" $dunstconf; then
     sed -i "/^$warningline$/q" $dunstconf
     {
-        echo ""
-        echo "[urgency_low]"
-        echo "$dunstbgline"
-        echo "$dunstfgline"
-        echo "$dunstwiline"
-        echo ""
-        echo "[urgency_normal]"
-        echo "$dunstbgline"
-        echo "$dunstfgline"
-        echo "$dunstwfline"
-        echo ""
-        echo "[urgency_critical]"
-        echo "$dunstbgline"
-        echo "$dunstfgline"
-        echo "$dunstwuline"
+    echo ""
+    echo "[urgency_low]"
+    echo "$dunstbgline"
+    echo "$dunstfgline"
+    echo "$dunstwiline"
+    echo ""
+    echo "[urgency_normal]"
+    echo "$dunstbgline"
+    echo "$dunstfgline"
+    echo "$dunstwfline"
+    echo ""
+    echo "[urgency_critical]"
+    echo "$dunstbgline"
+    echo "$dunstfgline"
+    echo "$dunstwuline"
     } >> $dunstconf
 fi
 
