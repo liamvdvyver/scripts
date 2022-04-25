@@ -8,7 +8,8 @@
 
 # INITAL VARIABLES --------------------------------------------------------- {{{
 
-usage="usage: theme.sh <theme> [--light] [--dark] [--toggle]"
+usage="usage: rice.sh <theme> [--light] [--dark] [--toggle]"
+
 if [ -z $1 ]; then
     echo "$usage"
     exit
