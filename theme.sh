@@ -3,26 +3,40 @@
 # Copies theme configuration from .Xresources to neovim, kitty, dunst, i3wm, and
 # sets corresponding wallpaper with nitrogen
 #
-# Usage: theme.sh [--toggle] [theme [--light]]
-#
 # NOTE: when specifying the layout of config files, ^ and $ are used to denote
 # the start and end of lines
 
 # INITAL VARIABLES --------------------------------------------------------- {{{
 
-# $1 should be either a theme, or --toggle
-
-if [ $1 ] && [ $1 = "--toggle" ]; then
+usage="usage: theme.sh <theme> [--light] [--dark] [--toggle]"
+if [ -z $1 ]; then
+    echo "$usage"
+    exit
+elif [ $1 = "--toggle" ]; then
     toggle=1
+elif [ $1 = "--light" ]; then
+    toggle=2
+    bg="light"
+elif [ $1 = "--dark" ]; then
+    toggle=2
+    bg="dark"
+elif [ $1 ]; then
+    theme=$1
 else
-    theme=${1-gruv}
+    echo "$usage"
+    exit
 fi
     
 # Set $bg to light or dark and adjust theme accordingly
 
-if [ $theme ] && [ $2 ] &&  [ $2 = "--light" ]; then
+if [ $2 ] && [ $theme ] && [ $2 = "--light" ]; then
     bg=light
     theme=$theme"L"
+elif [ $2 ] && [ $theme ] && [ $2 = "--dark" ]; then
+    bg=dark
+elif [ $2 ]; then
+    echo "$usage"
+    exit
 elif [ $theme ]; then
     bg=dark
 fi
@@ -111,15 +125,31 @@ if [ ! -f $xres ]; then
 fi
 
 # If $toggle = 1, find current theme and toggle xtheme <-> xthemeL, set $bg:
+# If $toggle = 2, find current theme and switch to variant set by $bg already
 
-if [ $toggle ] &&  [ $toggle = 1 ]; then
+if [ $toggle ]; then
     oldtheme=$(cat .Xresources | grep "#define fg [a-zL]\+fg" | sed "s/#define fg \([a-zL]\+\)fg/\1/")
-    if [ $(echo $oldtheme | grep "L") ]; then
-        theme=$(echo $oldtheme | sed "s/L//")
-        bg=dark
+    if [ $(echo $oldtheme | grep "L") ]; then # Remove L from $oldtheme and set $oldbg
+        oldtheme="$(echo $oldtheme | sed "s/L//")"
+        oldbg=light
     else
-        theme=$oldtheme"L"
-        bg=light
+        oldbg="dark"
+    fi
+    if [ $toggle = "1"  ]; then # If toggling, set $theme and $bg accordingly
+        if [ $oldbg = "dark" ]; then
+            theme=$oldtheme"L"
+            bg=light
+        else
+            theme=$oldtheme
+            bg=dark
+        fi
+    fi
+    if [ $toggle = "2" ]; then # If switching to specified bg, set theme
+        if [ $bg = "light" ]; then
+            theme=$oldtheme"L"
+        elif [ $bg = "dark" ]; then
+            theme=$oldtheme
+        fi
     fi
 fi
 
