@@ -1,3 +1,3 @@
-# scripts
+# Scripts
 
-Some bash scripts I use.
+Some shell scripts I use.
