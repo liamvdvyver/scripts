@@ -30,7 +30,7 @@ elif [ "$1" = "--dark" ]; then # --dark -> set $toggle to 2, dark $bg
 elif [ "$1" ]; then # other argument -> set $theme to argument
     theme="$1"
 fi
-    
+
 if [ "$theme" ] && [ -z "$2" ]; then # no $2, theme set -> default to dark $bg
     bg="dark"
 elif [ "$theme" ] && [ "$2" = "--light" ]; then # --light, theme set -> set
@@ -61,7 +61,7 @@ warningline="# FOLLOWING LINES WILL BE OVERWRITTEN"
 #
 # ^! [xthemeL] [vimtheme] !$
 #
-# The pallette should be defined by variables in format: 
+# The pallette should be defined by variables in format:
 #
 # ^#define xtheme_colour #XXXXXX$
 #
@@ -172,6 +172,40 @@ xrdb $xres # update xrdb for later
 
 # }}}
 
+# SET GTK THEMES ----------------------------------------------------------- {{{
+
+# Preferred gtk widget and icon themes
+gtklight="Adwaita"
+gtkdark="Adwaita-dark"
+iconlight="Papirus-Light"
+icondark="Papirus-Dark"
+
+# Set single widget and icont theme based on $bg
+if [ "$bg" = "dark" ]; then
+    gtk="$gtkdark"
+    icon="$icondark"
+elif [ "$bg" = "light" ]; then
+    gtk="$gtklight"
+    icon="$iconlight"
+fi
+
+# Location of gtk2 and gtk3 configs:
+gtk2conf=~/.gtkrc-2.0
+gtk3conf=~/.config/gtk-3.0/settings.ini
+
+# Set themes in config files
+if [ -f $gtk2conf ]; then
+    sed -i "s/^\(gtk-theme-name=\)\"[a-zA-Z\-]\+\"$/\1\"$gtk\"/" $gtk2conf
+    sed -i "s/^\(gtk-icon-theme-name=\)\"[a-zA-Z\-]\+\"$/\1\"$icon\"/" $gtk2conf
+fi
+
+if [ -f $gtk3conf ]; then
+    sed -i "s/^\(gtk-theme-name=\)\"[a-zA-Z\-]\+\"$/\1\"$gtk\"/" $gtk2conf
+    sed -i "s/^\(gtk-icon-theme-name=\)\"[a-zA-Z\-]\+\"$/\1\"$icon\"/" $gtk2conf
+fi
+
+# }}}
+
 # SET VIM COLORSCHEME ------------------------------------------------------ {{{
 
 vimconf=~/.config/nvim/init.vim # set location of MYVIMRC
@@ -231,27 +265,35 @@ dunstwiline="frame_color = \"$dunstwi\""
 dunstwfline="frame_color = \"$dunstwf\""
 dunstwuline="frame_color = \"$dunstwu\""
 
+# Set dunsticonline from $icon and enable recursive lookup
+dunsticonline="icon_theme = \"$icon\""
+dunstlookline="enable_recursive_icon_lookup = \"true\""
+
 # If the $warningline line is matched, delete all following lines and replace
 # with $dunstXXline in appopriate sections:
 
 if [ -f $dunstconf ] && grep -q "^$warningline$" $dunstconf; then
     sed -i "/^$warningline$/q" $dunstconf
     {
-    echo ""
-    echo "[urgency_low]"
-    echo "$dunstbgline"
-    echo "$dunstfgline"
-    echo "$dunstwiline"
-    echo ""
-    echo "[urgency_normal]"
-    echo "$dunstbgline"
-    echo "$dunstfgline"
-    echo "$dunstwfline"
-    echo ""
-    echo "[urgency_critical]"
-    echo "$dunstbgline"
-    echo "$dunstfgline"
-    echo "$dunstwuline"
+        echo ""
+        echo "[global]"
+        echo "$dunsticonline"
+        echo "$dunstlookline"
+        echo ""
+        echo "[urgency_low]"
+        echo "$dunstbgline"
+        echo "$dunstfgline"
+        echo "$dunstwiline"
+        echo ""
+        echo "[urgency_normal]"
+        echo "$dunstbgline"
+        echo "$dunstfgline"
+        echo "$dunstwfline"
+        echo ""
+        echo "[urgency_critical]"
+        echo "$dunstbgline"
+        echo "$dunstfgline"
+        echo "$dunstwuline"
     } >> $dunstconf
 fi
 
