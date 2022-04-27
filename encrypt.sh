@@ -5,5 +5,5 @@ yadm encrypt
 cp ~/.local/share/yadm/archive ~/git/dotfiles-secret || exit
 cd ~/git/dotfiles-secret || exit
 git add archive
-git commit -am "Encrypt files"
+git commit -am "chore: encrypt files"
 git push
