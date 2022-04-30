@@ -15,18 +15,23 @@ if [ ! -f $xres ]; then # warn if not found (required for script)
     exit
 fi
 
-themelist="$(grep "^\! [a-zL]\+ [a-z0-9]\+ \!$" $xres | cut -d ' ' -f 2 | sed 's/L/ --light/' | sed 's/^/    '/)"
-
-usage="usage: rice.sh <theme> [--light] [--dark] [--toggle]\n\nthemes found in $xres:\n$themelist\n"
+themelist="$(grep "^\! [a-zL]\+ [a-z0-9]\+ \!$" $xres | cut -d ' ' -f 2 | sed 's/L/-light/')"
+themelistindent="$(echo "$themelist" | sed 's/^/    /')"
+usage="usage: rice.sh <theme> [--light] [--dark] [--toggle]\n\nthemes found in $xres:\n$themelistindent\n"
 
 # Intended usage:
 # rice.sh [theme] -> $theme set to $1
 # rice.sh [theme] [--light OR --dark] -> $theme set to $1, $bg set per $2
 # rice.sh [--toggle] -> $toggle set to $1
 # rice.sh [--light OR --dark] -> $toggle set to 2, $bg set per $1
+# rice.sh [--light OR --dark] -> $toggle set to 2, $bg set per $1
+# rice.sh [--list] -> print $themelist
 
 if [ -z "$1" ]; then # No arguments -> usage warning
     printf "$usage"
+    exit
+elif [ "$1" = "--list" ]; then
+    echo "$themelist"
     exit
 elif [ "$1" = "--toggle" ] || [ "$1" = "-t" ]; then # --toggle -> set $toggle to 1
     toggle="1"
@@ -42,7 +47,7 @@ fi
 
 if [ "$theme" ] && [ -z "$2" ]; then # no $2, theme set -> default to dark $bg
     bg="dark"
-elif [ "$theme" ] && [ "$2" = "--light" ] || [ "$2" = "--l" ]; then # --light, theme set -> set
+elif [ "$theme" ] && [ "$2" = "--light" ] || [ "$2" = "-l" ]; then # --light, theme set -> set
     bg="light"                                  # -> $theme and $bg as per spec
     theme="$theme""L"
 elif [ "$theme" ] && [ "$2" = "--dark" ] || [ "$2" = "-d" ]; then # --dark, theme set -> set dark $bg
