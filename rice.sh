@@ -43,6 +43,7 @@ elif [ "$2" ]; then # invalid $2 -> usage warning
     exit
 fi
 
+
 # $warningline is placed in files to be overwritten by the script
 warningline="# FOLLOWING LINES WILL BE OVERWRITTEN"
 
@@ -152,12 +153,19 @@ if [ "$toggle" ]; then # if toggle is set, set $oldtheme literally
     fi
 fi
 
+# By now, should have $theme and $bg set directly or by reading $xres
+echo "Theme: $(echo "$theme" | sed 's/L//') $bg"
+echo ""
+
+
 # Set $xtheme to $theme if it is found in line specified format, and exit if it
 # is not set (invalid input/Xresources layout):
 
 xtheme="$(cat $xres | grep "^\! $theme [a-z0-9]\+ \!$" | cut -s -d ' ' -f 2)"
 
-if [ -z "$xtheme" ]; then
+if [ "$xtheme" ]; then
+    echo "xresources theme: $xtheme"
+else
     echo "Please select a valid theme from .Xresources"
     exit
 fi
@@ -165,10 +173,10 @@ fi
 # Overall variables are then set from xtheme variables as specified,
 # by finding and replacing corresponding lines with the current $xtheme:
 
-sed -i "s/^\(#define c\)\([0-9]\{2\}\) [a-zL]\+\2$/\1\2 $xtheme\2/" $xres
-sed -i "s/^\(#define \)\([a-z]\{2\}[0-9]\?\)\s[a-zL]\+\2$/\1\2 $xtheme\2/" $xres
-
-xrdb $xres # update xrdb for later
+sed -i "s/^\(#define c\)\([0-9]\{2\}\) [a-zL]\+\2$/\1\2 $xtheme\2/" $xres && \
+sed -i "s/^\(#define \)\([a-z]\{2\}[0-9]\?\)\s[a-zL]\+\2$/\1\2 $xtheme\2/" $xres && \
+xrdb $xres && \
+echo "updated $xres"
 
 # }}}
 
@@ -195,13 +203,15 @@ gtk3conf=~/.config/gtk-3.0/settings.ini
 
 # Set themes in config files
 if [ -f $gtk2conf ]; then
-    sed -i "s/^\(gtk-theme-name=\)\"[a-zA-Z\-]\+\"$/\1\"$gtk\"/" $gtk2conf
-    sed -i "s/^\(gtk-icon-theme-name=\)\"[a-zA-Z\-]\+\"$/\1\"$icon\"/" $gtk2conf
+    sed -i "s/^\(gtk-theme-name=\)\"[a-zA-Z\-]\+\"$/\1\"$gtk\"/" $gtk2conf && \
+    sed -i "s/^\(gtk-icon-theme-name=\)\"[a-zA-Z\-]\+\"$/\1\"$icon\"/" $gtk2conf && \
+    echo "updated $gtk2conf"
 fi
 
 if [ -f $gtk3conf ]; then
-    sed -i "s/^\(gtk-theme-name=\)\"[a-zA-Z\-]\+\"$/\1\"$gtk\"/" $gtk2conf
-    sed -i "s/^\(gtk-icon-theme-name=\)\"[a-zA-Z\-]\+\"$/\1\"$icon\"/" $gtk2conf
+    sed -i "s/^\(gtk-theme-name=\)\"[a-zA-Z\-]\+\"$/\1\"$gtk\"/" $gtk2conf && \
+    sed -i "s/^\(gtk-icon-theme-name=\)\"[a-zA-Z\-]\+\"$/\1\"$icon\"/" $gtk2conf && \
+    echo "updated $gtk3conf"
 fi
 
 # }}}
@@ -220,6 +230,8 @@ fi
 if [ "$vimtheme" ]; then
     sed -i "s/^\(colorscheme \)[a-z0-9]\+$/\1$vimtheme/" $vimconf
     sed -i "s/^\(set background=\)[a-z]\+$/\1$bg/" $vimconf
+    echo "nvim theme: $vimtheme"
+    echo updated "$vimconf"
 fi
 
 # }}}
@@ -243,6 +255,7 @@ if [ -f $kittyconf ] && grep -q "^$warningline$" $kittyconf; then
     sed -i "/^$warningline$/q" $kittyconf
     echo "" >> $kittyconf
     xrdb -query | grep "$kittyregex" |cut -c 2- | sed "s/:\s/ /" | sed -r "s/^cursorColor/cursor/" >> $kittyconf
+    echo "updated $kittyconf"
 fi
 
 # }}}
@@ -294,7 +307,8 @@ if [ -f $dunstconf ] && grep -q "^$warningline$" $dunstconf; then
         echo "$dunstbgline"
         echo "$dunstfgline"
         echo "$dunstwuline"
-    } >> $dunstconf
+    } >> $dunstconf && \
+        echo "updated $dunstconf"
 fi
 
 # }}}
@@ -310,7 +324,8 @@ papedirregex="$(echo $papedir | sed 's/\//\\\//g')"
 # current $theme.jpg in config:
 
 if [ -f $nitrogenconf ] && [ -f "$papedir$theme.jpg" ]; then
-    sed -i "s/^\(file=$papedirregex\)[a-zA-Z0-9]\+\(\.jpg\)/\1$theme\2/" $nitrogenconf
+    sed -i "s/^\(file=$papedirregex\)[a-zA-Z0-9]\+\(\.jpg\)/\1$theme\2/" $nitrogenconf && \
+    echo "updated $nitrogenconf"
 fi
 
 # }}}
@@ -319,13 +334,14 @@ fi
 
 # Restart i3
 
-if [ "$(command -v i3-msg)" ]; then i3-msg restart; fi # restart i3 if installed
+if [ "$(command -v i3-msg)" ]; then i3-msg restart && echo "reloaded i3"; fi # restart i3 if installed
 
 # Send SIGUSR1 to runnin kitty instances (reloads config):
-pgrep kitty | xargs kill -s USR1
+pgrep kitty | xargs kill -s USR1 && echo "reloaded kitty"
 
 # Find nvim server sockets and remote send command to reload config:
 nvim_socks="$(find /tmp/ -regex "/tmp/nvim[a-zA-Z0-9]+/0" -print 2>/dev/null | paste -s -d ' ')"
-echo "$nvim_socks" | xargs -r -n 1 nvim --remote-send ':source $MYVIMRC<CR>' --server
+echo "$nvim_socks" | xargs -r -n 1 nvim --remote-send ':source $MYVIMRC<CR>' --server && \
+echo "reloaded nvim"
 
 # }}}
