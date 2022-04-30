@@ -8,7 +8,16 @@
 
 # INITAL VARIABLES --------------------------------------------------------- {{{
 
-usage="usage: rice.sh <theme> [--light] [--dark] [--toggle]"
+xres=~/.Xresources # location of Xresources config
+
+if [ ! -f $xres ]; then # warn if not found (required for script)
+    echo "no Xresources configuration found at $xres"
+    exit
+fi
+
+themelist="$(grep "^\! [a-zL]\+ [a-z0-9]\+ \!$" $xres | cut -d ' ' -f 2 | sed 's/L/ --light/' | sed 's/^/    '/)"
+
+usage="usage: rice.sh <theme> [--light] [--dark] [--toggle]\n\nthemes found in $xres:\n$themelist\n"
 
 # Intended usage:
 # rice.sh [theme] -> $theme set to $1
@@ -17,7 +26,7 @@ usage="usage: rice.sh <theme> [--light] [--dark] [--toggle]"
 # rice.sh [--light OR --dark] -> $toggle set to 2, $bg set per $1
 
 if [ -z "$1" ]; then # No arguments -> usage warning
-    echo "$usage"
+    printf "$usage"
     exit
 elif [ "$1" = "--toggle" ] || [ "$1" = "-t" ]; then # --toggle -> set $toggle to 1
     toggle="1"
@@ -39,7 +48,7 @@ elif [ "$theme" ] && [ "$2" = "--light" ] || [ "$2" = "--l" ]; then # --light, t
 elif [ "$theme" ] && [ "$2" = "--dark" ] || [ "$2" = "-d" ]; then # --dark, theme set -> set dark $bg
     bg="dark"
 elif [ "$2" ]; then # invalid $2 -> usage warning
-    echo "$usage"
+    printf "$usage"
     exit
 fi
 
@@ -117,13 +126,6 @@ warningline="# FOLLOWING LINES WILL BE OVERWRITTEN"
 
 # ---- }}}
 
-xres=~/.Xresources # location of Xresources config
-
-if [ ! -f $xres ]; then # warn if not found (required for script)
-    echo "no Xresources configuration found at $xres"
-    exit
-fi
-
 # If $toggle = 1, find current theme and toggle xtheme <-> xthemeL, set $bg:
 # If $toggle = 2, find current theme and switch to variant set by $bg already
 
@@ -154,7 +156,7 @@ if [ "$toggle" ]; then # if toggle is set, set $oldtheme literally
 fi
 
 # By now, should have $theme and $bg set directly or by reading $xres
-echo "Theme: $(echo "$theme" | sed 's/L//') $bg"
+echo "theme: $(echo "$theme" | sed 's/L//') $bg"
 echo ""
 
 
@@ -166,7 +168,8 @@ xtheme="$(cat $xres | grep "^\! $theme [a-z0-9]\+ \!$" | cut -s -d ' ' -f 2)"
 if [ "$xtheme" ]; then
     echo "xresources theme: $xtheme"
 else
-    echo "Please select a valid theme from .Xresources"
+    echo "Xresources: theme not found"
+    printf "\nthemes found in $xres:\n$themelist\n"
     exit
 fi
 
