@@ -42,7 +42,7 @@ elif [ "$1" = "--dark" ] || [ "$1" = "-d" ]; then # --dark -> set $toggle to 2, 
     toggle="2"
     bg="dark"
 elif [ "$1" ]; then # other argument -> set $theme to argument
-    theme="$1"
+    theme=$(echo "$1" | grep "^[a-z]\+$")
 fi
 
 if [ "$theme" ] && [ -z "$2" ]; then # no $2, theme set -> default to dark $bg
