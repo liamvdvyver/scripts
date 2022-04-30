@@ -341,7 +341,7 @@ pgrep kitty | xargs kill -s USR1 && echo "reloaded kitty"
 
 # Find nvim server sockets and remote send command to reload config:
 nvim_socks="$(find /tmp/ -regex "/tmp/nvim[a-zA-Z0-9]+/0" -print 2>/dev/null | paste -s -d ' ')"
-echo "$nvim_socks" | xargs -r -n 1 nvim --remote-send ':source $MYVIMRC<CR>' --server && \
+echo "$nvim_socks" | xargs -r -n 1 nvim --remote-send ":source \$MYVIMRC<CR>" --server && \
 echo "reloaded nvim"
 
 # }}}
