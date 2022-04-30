@@ -62,6 +62,8 @@ warningline="# FOLLOWING LINES WILL BE OVERWRITTEN"
 
 # ---- THEME SPECIFICATION ------------------------------------------------- {{{
 
+# (example file at gitlab.com/liamvdvyver/dotfiles-public/-/blob/main/.Xresources)
+#
 # Themes should be laid out in xresources in the format:
 #
 # ^! [xtheme] [vimtheme] !$
