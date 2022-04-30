@@ -19,12 +19,12 @@ usage="usage: rice.sh <theme> [--light] [--dark] [--toggle]"
 if [ -z "$1" ]; then # No arguments -> usage warning
     echo "$usage"
     exit
-elif [ "$1" = "--toggle" ]; then # --toggle -> set $toggle to 1
+elif [ "$1" = "--toggle" ] || [ "$1" = "-t" ]; then # --toggle -> set $toggle to 1
     toggle="1"
-elif [ "$1" = "--light" ]; then # --light -> set $toggle to 2, light $bg
+elif [ "$1" = "--light" ] || [ "$1" = "-l" ]; then # --light -> set $toggle to 2, light $bg
     toggle="2"
     bg="light"
-elif [ "$1" = "--dark" ]; then # --dark -> set $toggle to 2, dark $bg
+elif [ "$1" = "--dark" ] || [ "$1" = "-d" ]; then # --dark -> set $toggle to 2, dark $bg
     toggle="2"
     bg="dark"
 elif [ "$1" ]; then # other argument -> set $theme to argument
@@ -33,10 +33,10 @@ fi
 
 if [ "$theme" ] && [ -z "$2" ]; then # no $2, theme set -> default to dark $bg
     bg="dark"
-elif [ "$theme" ] && [ "$2" = "--light" ]; then # --light, theme set -> set
+elif [ "$theme" ] && [ "$2" = "--light" ] || [ "$2" = "--l" ]; then # --light, theme set -> set
     bg="light"                                  # -> $theme and $bg as per spec
     theme="$theme""L"
-elif [ "$theme" ] && [ "$2" = "--dark" ]; then # --dark, theme set -> set dark $bg
+elif [ "$theme" ] && [ "$2" = "--dark" ] || [ "$2" = "-d" ]; then # --dark, theme set -> set dark $bg
     bg="dark"
 elif [ "$2" ]; then # invalid $2 -> usage warning
     echo "$usage"
