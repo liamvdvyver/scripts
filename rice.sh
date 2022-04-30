@@ -202,6 +202,9 @@ elif [ "$bg" = "light" ]; then
     icon="$iconlight"
 fi
 
+echo "gtk widget theme: $gtk"
+echo "gtk icon theme: $icon"
+
 # Location of gtk2 and gtk3 configs:
 gtk2conf=~/.gtkrc-2.0
 gtk3conf=~/.config/gtk-3.0/settings.ini
