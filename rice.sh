@@ -17,7 +17,7 @@ fi
 
 themelist="$(grep "^\! [a-zL]\+ [a-z0-9]\+ \!$" $xres | cut -d ' ' -f 2 | sed 's/L/-light/')"
 themelistindent="$(echo "$themelist" | sed 's/^/    /')"
-usage="usage: rice.sh <theme> [--light] [--dark] [--toggle]\n\nthemes found in $xres:\n$themelistindent\n"
+usage="usage: rice.sh <theme> [--light] [--dark] [--toggle] [--list]\n\nthemes found in $xres:\n$themelistindent\n"
 
 # Intended usage:
 # rice.sh [theme] -> $theme set to $1
