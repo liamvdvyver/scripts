@@ -302,7 +302,12 @@ nvim_socks="$(find /tmp/ -regex "/tmp/nvim[a-zA-Z0-9]+/0" -print 2>/dev/null | p
 echo "$nvim_socks" | xargs -r -n 1 nvim --remote-send "<esc>:source \$MYVIMRC<CR>" --server && \
 echo "reloaded nvim"
 
-# Find zathura instances and source condig with dbus
+# Find zathura instances and source config with dbus:
 pgrep zathura | xargs -I '{}' dbus-send --type=method_call --dest=org.pwmt.zathura.PID-'{}' /org/pwmt/zathura org.pwmt.zathura.ExecuteCommand string:source
+
+# Source qutebrowser config if running:
+if [ "$(pgrep qutebrowser)" ]; then
+    qutebrowser ':config-source'
+fi
 
 # }}}
