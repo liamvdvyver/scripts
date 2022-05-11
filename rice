@@ -14,7 +14,7 @@ fi
 
 themelist="$(ls "$xdir" -w 1)"
 themelistindent="$(echo "$themelist" | sed 's/^/    /')"
-usage="usage: rice.sh <theme> [--light] [--dark] [--toggle] [--list]\n\nthemes found in $xdir:\n$themelistindent\n"
+usage="usage: rice <theme> [--light] [--dark] [--toggle] [--list]\n\nthemes found in $xdir:\n$themelistindent\n"
 
 # Intended usage:
 # rice.sh [theme] -> $theme set to $1

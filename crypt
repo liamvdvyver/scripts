@@ -3,8 +3,9 @@
 
 gitdir=~/git/dotfiles-secret
 yadmdir=~/.local/share/yadm
+usage="usage: crypt [--decrypt] [--encrypt]"
 
-if [ -z "$1" ]; then
+if [ "$1" = "-e" ] || [ "$1" = "--encrypt" ]; then
     yadm encrypt
     cp $yadmdir/archive $gitdir || exit
     cd $gitdir || exit
@@ -17,6 +18,6 @@ elif [ "$1" = "-d" ] || [ "$1" = "--decrypt" ]; then
     cp archive $yadmdir || exit
     yadm decrypt
 else
-    echo "usage: encrypt.sh [--decrypt]"
+    echo "$usage"
     exit
 fi
