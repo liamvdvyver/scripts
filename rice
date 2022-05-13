@@ -272,19 +272,15 @@ fi
 
 # }}}
 
-# SET NITROGEN WALLPAPER --------------------------------------------------- {{{
+# SET WALLPAPER ------------------------------------------------------------ {{{
 
-# Set niteogen config location and regex for wallpaper directory:
-nitrogenconf=~/.config/nitrogen/bg-saved.cfg
+# Set nitrogen config location and regex for wallpaper directory:
 papedir=~/.config/rice/papes/
-papedirregex="$(echo $papedir | sed 's/\//\\\//g')"
 wallpaper="$(ls $papedir -w 1 | grep "^$theme\.[a-zA_Z]\+$")"
 
-# If config is found and file exists names $theme, replace old theme.jpg with
-# current $theme.jpg in config:
-if [ -f $nitrogenconf ] && [ "$wallpaper" ]; then
-    sed -i "s/^\(file=\).\+/\1$papedirregex$wallpaper/" $nitrogenconf && \
-    echo "updated $nitrogenconf"
+if [ -f "$(which pape)" ] && [ "$wallpaper" ]; then
+    pape "$papedir""$wallpaper" && \
+    echo "wallpaper: $papedir$wallpaper"
 fi
 
 # }}}
@@ -295,19 +291,27 @@ fi
 if [ "$(command -v i3-msg)" ]; then i3-msg restart && echo "reloaded i3"; fi # restart i3 if installed
 
 # Send SIGUSR1 to runnin kitty instances (reloads config):
-pgrep kitty | xargs kill -s USR1 && echo "reloaded kitty"
+if [ "$(pgrep kitty)" ]; then
+    pgrep kitty | xargs kill -s USR1 && echo "reloaded kitty"
+fi
 
 # Find nvim server sockets and remote send command to reload config:
 nvim_socks="$(find /tmp/ -regex "/tmp/nvim[a-zA-Z0-9]+/0" -print 2>/dev/null | paste -s -d ' ')"
-echo "$nvim_socks" | xargs -r -n 1 nvim --remote-send "<esc>:source \$MYVIMRC<CR>" --server && \
-echo "reloaded nvim"
+if [ "$nvim_socks" ]; then
+    echo "$nvim_socks" | xargs -r -n 1 nvim --remote-send "<esc>:source \$MYVIMRC<CR>" --server && \
+    echo "reloaded nvim"
+fi
 
 # Find zathura instances and source config with dbus:
-pgrep zathura | xargs -I '{}' dbus-send --type=method_call --dest=org.pwmt.zathura.PID-'{}' /org/pwmt/zathura org.pwmt.zathura.ExecuteCommand string:source
+if [ "$(pgrep zathura)" ]; then
+    pgrep zathura | xargs -I '{}' dbus-send --type=method_call --dest=org.pwmt.zathura.PID-'{}' /org/pwmt/zathura org.pwmt.zathura.ExecuteCommand string:source && \
+    echo "reloaded zathura"
+fi
 
 # Source qutebrowser config if running:
 if [ "$(pgrep qutebrowser)" ]; then
     qutebrowser ':config-source'
+    echo "reloaded qutebrowser"
 fi
 
 # }}}

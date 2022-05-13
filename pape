@@ -1,0 +1,30 @@
+#!/bin/sh
+# Change wallapaper with xwallpaper
+
+usage="usage: pape <file> [--interactive]"
+papedir=~/drive/Pictures/papes/
+display="HDMI-1-0"
+papeconf=~/.config/rice/pape
+
+if [ "$1" = "--interactive" ] || [ "$1" = "-i" ]; then
+    prompt="1"
+elif [ "$1" ]; then
+    pape="$1"
+else
+    echo "$usage"
+    exit
+fi
+
+if [ "$prompt" = "1" ]; then
+    if [ -f "$(which fzf-ueberzogen.sh)" ]; then
+        pape="$(find $papedir -type f | fzf-ueberzogen.sh | xargs readlink -f)"
+    fi
+fi
+
+if [ -f "$pape" ]; then
+    xwallpaper --no-randr --zoom "$pape"
+    xwallpaper --output "$display" --zoom "$pape"
+    echo "$pape" > $papeconf
+else
+    echo "$pape not found"
+fi
