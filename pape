@@ -3,7 +3,7 @@
 
 usage="usage: pape <file> [--interactive]"
 papedir=~/drive/Pictures/papes/
-display="HDMI-1-0"
+display="VGA-0"
 papeconf=~/.config/rice/pape
 
 if [ "$1" = "--interactive" ] || [ "$1" = "-i" ]; then
