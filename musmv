@@ -1,0 +1,144 @@
+#!/bin/sh
+# Sort music files tagged by picards
+
+# set $file
+file="$1"
+
+# get tags from flac
+if file "$file" | grep -e "FLAC audio"; then
+    ext="flac"
+    albumartist="$(metaflac --show-tag=ALBUMARTIST "$file" | sed 's/^ALBUMARTIST=//')"
+    #echo "albumartist: $albumartist"
+    album="$(metaflac --show-tag=ALBUM "$file" | sed 's/^ALBUM=//')"
+    #echo "album: $album"
+    title="$(metaflac --show-tag=TITLE "$file" | sed 's/^TITLE=//')"
+    #echo "title: $title"
+    year="$(metaflac --show-tag=DATE "$file" | sed -e 's/^DATE=//' -e 's/\([0-9]\{4\}\).*/\1/')"
+    #echo "year: $year"
+    oriyear="$(metaflac --show-tag=ORIGINALDATE "$file" | sed -e 's/^ORIGINALDATE=//' -e 's/\([0-9]\{4\}\).*/\1/')"
+    #echo "oriyear: $oriyear"
+    media="$(metaflac --show-tag=MEDIA "$file" | sed 's/^MEDIA=//')"
+    #echo "media: $media"
+    label="$(metaflac --show-tag=LABEL "$file" | sed 's/^LABEL=//')"
+    #echo "label: $label"
+    catalog="$(metaflac --show-tag=CATALOGNUMBER "$file" | sed 's/^CATALOGNUMBER=//')"
+    #echo "catalog: $catalog"
+    source="$(metaflac --show-tag=SOURCE "$file" | sed 's/^SOURCE=//')"
+    #echo "source: $source"
+    disc="$(metaflac --show-tag=DISCNUMBER "$file" | sed 's/^DISCNUMBER=//')"
+    #echo "disc: $disc"
+    tdiscs="$(metaflac --show-tag=TOTALDISCS "$file" | sed 's/^TOTALDISCS=//')"
+    #echo "totaldiscs: $tdiscs"
+    discsub="$(metaflac --show-tag=DISCSUBTITLE "$file" | sed 's/^DISCSUBTITLE=//')"
+    #echo "discsub: $discsub"
+    track="$(metaflac --show-tag=TRACKNUMBER "$file" | sed 's/^TRACKNUMBER=//')"
+    #echo "track: $track"
+    ttracks="$(metaflac --show-tag=TOTALTRACKS "$file" | sed 's/^TOTALTRACKS=//')"
+    #echo "tracks: $ttracks"
+fi
+
+
+# get tags from mp3
+if ffprobe "$file" 2>&1 | grep -e "Audio: mp3"; then
+    ext="mp3"
+    metadata="$(ffprobe "$file" 2>&1)"
+    albumartist="$(echo "$metadata" | grep "^ \+album_artist \+: " | sed 's/^ \+album_artist \+: //')"
+    #echo "albumartist: $albumartist"
+    album="$(echo "$metadata" | grep "^ \+album \+: " | sed 's/^ \+album \+: //')"
+    #echo "album: $album"
+    title="$(echo "$metadata" | grep "^ \+title \+: " | sed 's/^ \+title \+: //')"
+    #echo "title: $title"
+    year="$(echo "$metadata" | grep "^ \+date \+: " | sed -e 's/^ \+date \+: //' -e 's/\([0-9]\{4\}\).*/\1/')"
+    #echo "year: $year"
+    oriyear="$(echo "$metadata" | grep "^ \+originalyear \+: " | sed -e 's/^ \+originalyear \+: //' -e 's/\([0-9]\{4\}\).*/\1/')"
+    #echo "oriyear: $oriyear"
+    media="$(echo "$metadata" | grep "^ \+TMED \+: " | sed 's/^ \+TMED \+: //')"
+    #echo "media: $media"
+    label="$(echo "$metadata" | grep "^ \+publisher \+: " | sed 's/^ \+publisher \+: //')"
+    #echo "label: $label"
+    catalog="$(echo "$metadata" | grep "^ \+CATALOGNUMBER \+: " | sed 's/^ \+CATALOGNUMBER \+: //')"
+    #echo "catalog: $catalog"
+    source="$(echo "$metadata" | grep -i "^ \+source \+: " | sed 's/^ \+source \+: //I')"
+    #echo "source: $source"
+    disc="$(echo "$metadata" | grep "^ \+disc \+: " | sed 's/^ \+disc \+: \([0-9]\+\)\/.*/\1/')"
+    #echo "disc: $disc"
+    tdiscs="$(echo "$metadata" | grep "^ \+disc \+: " | sed 's/^ \+disc \+: [0-9]\+\/\([0-9]\+\).*/\1/')"
+    #echo "totaldiscs: $tdiscs"
+    # TODO: use correct subtitle tag
+    discsub="$(echo "$metadata" | grep "^ \+subtitle \+: " | sed 's/^ \+subtitle \+: //')"
+    #echo "discsub: $discsub"
+    track="$(echo "$metadata" | grep "^ \+track \+: " | sed 's/^ \+track \+: \([0-9]\+\)\/.*/\1/')"
+    #echo "disc: $disc"
+    ttracks="$(echo "$metadata" | grep "^ \+track \+: " | sed 's/^ \+track \+: [0-9]\+\/\([0-9]\+\).*/\1/')"
+    #echo "tracks: $ttracks"
+fi
+
+# set $multidisc
+if [ "$tdiscs" = "1" ]; then
+    multidisc="false"
+elif [ "$tdiscs" ]; then
+    multidisc="true"
+else
+    echo "no totaldiscs tag found"
+    multidisc="true" # in case the release is multidisc to preserve directories
+fi
+
+# set $printtrack
+if [ "$multidisc" = "true" ]; then
+    printtrack="$disc-$(printf %02d "$track")"
+else
+    printtrack="$(printf %02d "$track")"
+fi
+
+# set discfolder
+if [ "$multidisc" = "false" ]; then
+    discfolder=""
+elif [ "$discsub" ]; then
+    discfolder="disc $disc - $discsub"
+else
+    discfolder="disc $disc"
+fi
+
+discfolder="$(echo "$discfolder" | sed 's/\//-/')""/"
+
+# set filename
+filename="$(echo "$printtrack $title.$ext" | sed 's/\//-/')"
+
+# set $useyear
+if [ "$year" ] && [ "$oriyear" ]; then
+    if  [ "$year" = "$oriyear" ]; then
+        useyear="year"
+    else
+        useyear="both"
+    fi
+elif [ "$year" ]; then
+    useyear="year"
+elif [ "$oriyear" ]; then
+    useyear="oriyear"
+else
+    echo "no year tags found"
+    exit
+fi
+
+# set $printyear
+if [ "$useyear" = "year" ]; then
+    printyear="$year"
+elif [ "$useyear" = "oriyear" ]; then
+    printyear="$oriyear"
+elif [ "$useyear" = "both" ]; then
+    printyear="$oriyear""-""$year"
+fi
+
+# set folder
+folder="$(echo "($printyear) $album ($label - $catalog) [$media - $source]" | sed 's/\//-/')""/"
+
+# do the move
+parent="$(dirname "$file")"
+mvroot="$HOME/Music/"
+mvdir="$mvroot""$folder""$discfolder"
+mkdir "$mvroot"
+mkdir "$mvroot""$folder"
+mkdir "$mvdir"
+mv "$file" "$mvdir""$filename"
+cd "$parent" || exit
+find ./ -maxdepth 1 -regex './.+' | sed -e '/\.flac$/d' -e '/\.mp3$/d' | xargs -I '{}' mv '{}' "$mvdir"

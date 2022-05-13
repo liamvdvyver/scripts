@@ -1,0 +1,50 @@
+#!/bin/bash
+# Clean music directory prior to tagging and sorting
+
+shopt -s globstar
+
+# remove all whitespace from names
+find ./ -name '* *' -execdir perl-rename 's/ //g' {} +
+
+# move art folder
+mv -i Artwork/ art/
+mv -i Scans/ art/
+mv -i Scan/ art/
+mv -i Covers/ art/
+
+# make directories
+mkdir other
+mkdir source
+mkdir art
+
+# move files
+find ./ -iregex "\(?i\).*\.cue$" -exec mv -i {} other/disc.cue \;
+find ./ -iregex ".*\.url$" -exec mv -i {} source/source.url \;
+find ./ -iregex ".*\.torrent$" -exec mv -i {} source/source.torrent \;
+find ./ -iregex ".*\.accurip$" -exec mv -i {} other/disc.accurip \;
+find ./ -iname "front.jpg" -exec mv -i {} art/front.jpg \;
+find ./ -iregex ".*\.jpg" -exec mv -i {} art/ \;
+find ./ -iname "info.txt" -exec mv -i {} other/info.txt \;
+find ./ -iregex ".*\.m3u$" -delete
+
+# sort logs
+for i in **/*.log; do
+    if rg -e "AUDIOCHECKER" "$i"; then
+        mv -i "$i" other/XLD.log
+    elif rg -e "EAC extraction logfile" "$i" || rg -e "Exact Audio Copy" "$i"; then
+        mv -i "$i" other/EAC.log
+    elif rg -e "X Lossless Decoder" "$i"; then
+        mv -i "$i" other/XLD.log
+    elif rg -e "auCDtect" "$i"; then
+        mv -i "$i" other/auCDtect.log
+    fi
+done
+
+# sort txts
+for i in **/*.txt; do
+    if rg -e "auCDtect" "$i"; then
+        mv -i "$i" other/auCDtect.txt
+    else
+        mv -i "$i" other/info.txt
+    fi
+done

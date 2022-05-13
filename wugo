@@ -1,0 +1,4 @@
+#!/bin/sh
+# Follow windows .url links
+
+grep "URL=" "$1" | sed 's/URL=//' | xargs i3-msg exec xdg-open
