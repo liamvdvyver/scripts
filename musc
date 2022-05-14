@@ -3,6 +3,10 @@
 
 shopt -s globstar
 
+if [ "$1" = "-s" ] || [ "$1" = "--stream" ]; then
+    stream=true
+fi
+
 # remove all whitespace from names
 find ./ -name '* *' -execdir perl-rename 's/ //g' {} +
 
@@ -13,9 +17,11 @@ mv -i Scan/ art/
 mv -i Covers/ art/
 
 # make directories
-mkdir other
-mkdir source
-mkdir art
+if ! [ "$stream" = "true" ]; then
+    mkdir other
+    mkdir source
+    mkdir art
+fi
 
 # move files
 find ./ -iregex "\(?i\).*\.cue$" -exec mv -i {} other/disc.cue \;
