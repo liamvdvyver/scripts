@@ -1,0 +1,26 @@
+#!/bin/sh
+# Extract dsf from SACD iso and clean directory
+
+file="$1"
+
+parent="$(dirname "$file")"
+cd "$parent" || exit
+
+if echo "$file" | grep -e '.+\.iso'; then
+    echo "input not a .iso file"
+    exit
+fi
+
+sacd_extract -s2C -i "$file"
+
+mkdir sacd_extract/
+find . -maxdepth 1 -name '*\.cue' -exec mv {} sacd_extract/disc.cue \;
+find . -mindepth 2 -maxdepth 2 -name '*\.dsf' -exec mv -i {} "$(pwd)" \;
+
+sacd_extract -smC -i "$file" && \
+find . -maxdepth 1 -name '*\.cue' -exec mv {} 'sacd_extract/[5.1] disc.cue' \; && \
+child="$(find . -mindepth 2 -maxdepth 2 -name '*\.dsf' -exec dirname {} \; | uniq)" && \
+cd "$child" || exit && \
+find . -name '*\.dsf' -exec perl-rename 's/\.\//\.\/[5.1] /' {} \; && \
+cd "$parent" && \
+find . -mindepth 2 -maxdepth 2 -name '*\.dsf' -exec mv -i {} "$(pwd)" \;
