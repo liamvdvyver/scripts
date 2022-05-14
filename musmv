@@ -73,6 +73,47 @@ if ffprobe "$file" 2>&1 | grep -e "Audio: mp3"; then
     #echo "tracks: $ttracks"
 fi
 
+# get tags from dsf
+if ffprobe "$file" 2>&1 | grep -e "Audio: dsd_lsbf_planar"; then
+    ext="dsf"
+    metadata="$(ffprobe "$file" 2>&1)"
+    if echo "$metadata" | grep -e 'Audio: dsd_lsbf_planar, [0-9]\+ Hz, 5.1, .*'; then
+        channels="5.1"
+    elif echo "$metadata" | grep -e 'Audio: dsd_lsbf_planar, [0-9]\+ Hz, stereo, .*'; then
+        channels="2"
+    fi
+    echo $channels
+    albumartist="$(echo "$metadata" | grep "^ \+album_artist \+: " | sed 's/^ \+album_artist \+: //')"
+    echo "albumartist: $albumartist"
+    album="$(echo "$metadata" | grep "^ \+album \+: " | sed 's/^ \+album \+: //')"
+    echo "album: $album"
+    title="$(echo "$metadata" | grep "^ \+title \+: " | sed 's/^ \+title \+: //')"
+    echo "title: $title"
+    year="$(echo "$metadata" | grep "^ \+date \+: " | sed -e 's/^ \+date \+: //' -e 's/\([0-9]\{4\}\).*/\1/')"
+    echo "year: $year"
+    oriyear="$(echo "$metadata" | grep "^ \+originalyear \+: " | sed -e 's/^ \+originalyear \+: //' -e 's/\([0-9]\{4\}\).*/\1/')"
+    echo "oriyear: $oriyear"
+    media="$(echo "$metadata" | grep "^ \+TMED \+: " | sed -e 's/^ \+TMED \+: //' -e 's/ (.*)//')"
+    echo "media: $media"
+    label="$(echo "$metadata" | grep "^ \+publisher \+: " | sed 's/^ \+publisher \+: //')"
+    echo "label: $label"
+    catalog="$(echo "$metadata" | grep "^ \+CATALOGNUMBER \+: " | sed 's/^ \+CATALOGNUMBER \+: //')"
+    echo "catalog: $catalog"
+    source="$(echo "$metadata" | grep -i "^ \+source \+: " | sed 's/^ \+source \+: //I')"
+    echo "source: $source"
+    disc="$(echo "$metadata" | grep "^ \+disc \+: " | sed 's/^ \+disc \+: \([0-9]\+\)\/.*/\1/')"
+    echo "disc: $disc"
+    tdiscs="$(echo "$metadata" | grep "^ \+disc \+: " | sed 's/^ \+disc \+: [0-9]\+\/\([0-9]\+\).*/\1/')"
+    echo "totaldiscs: $tdiscs"
+    #TODO: use correct subtitle tag
+    discsub="$(echo "$metadata" | grep "^ \+subtitle \+: " | sed 's/^ \+subtitle \+: //')"
+    echo "discsub: $discsub"
+    track="$(echo "$metadata" | grep "^ \+track \+: " | sed 's/^ \+track \+: \([0-9]\+\)\/.*/\1/')"
+    echo "disc: $disc"
+    ttracks="$(echo "$metadata" | grep "^ \+track \+: " | sed 's/^ \+track \+: [0-9]\+\/\([0-9]\+\).*/\1/')"
+    echo "tracks: $ttracks"
+fi
+
 # set $multidisc
 if [ "$tdiscs" = "1" ]; then
     multidisc="false"
@@ -92,17 +133,20 @@ fi
 
 # set discfolder
 if [ "$multidisc" = "false" ]; then
-    discfolder=""
+    discdir=""
 elif [ "$discsub" ]; then
-    discfolder="disc $disc - $discsub"
+    discdir="disc $disc - $discsub"
 else
-    discfolder="disc $disc"
+    discdir="disc $disc"
 fi
 
-discfolder="$(echo "$discfolder" | sed 's/\//-/')""/"
+discdir="$(echo "$discdir" | sed 's/\//-/')""/"
 
 # set filename
 filename="$(echo "$printtrack $title.$ext" | sed 's/\//-/')"
+if [ "$channels" = "5.1" ]; then
+    filename="[5.1] $filename"
+fi
 
 # set $useyear
 if [ "$year" ] && [ "$oriyear" ]; then
@@ -130,15 +174,18 @@ elif [ "$useyear" = "both" ]; then
 fi
 
 # set folder
-folder="$(echo "($printyear) $album ($label - $catalog) [$media - $source]" | sed 's/\//-/')""/"
+albumdir="$(echo "($printyear) $album ($label - $catalog) [$media - $source]" | sed 's/\//-/')""/"
+
+# set artistfolder
+artistdir="$(echo "$albumartist" | sed 's/\//-/')""/"
 
 # do the move
 parent="$(dirname "$file")"
 mvroot="$HOME/Music/"
-mvdir="$mvroot""$folder""$discfolder"
-mkdir "$mvroot"
-mkdir "$mvroot""$folder"
-mkdir "$mvdir"
-mv "$file" "$mvdir""$filename"
+mvdir="$mvroot""$artistdir""$albumdir""$discdir"
+mkdir -p "$mvdir"
+mv -i "$file" "$mvdir""$filename"
 cd "$parent" || exit
-find ./ -maxdepth 1 -regex './.+' | sed -e '/\.flac$/d' -e '/\.mp3$/d' | xargs -I '{}' mv '{}' "$mvdir"
+find ./ -maxdepth 1 -regex './.+' | sed -e '/\.flac$/d' -e '/\.mp3$/d' -e '/\.dsf$/d'| xargs -I '{}' mv '{}' "$mvdir"
+cd ..
+find "$parent" -depth -type d -exec rm -d {} \;
