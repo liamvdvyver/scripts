@@ -276,11 +276,11 @@ fi
 
 # Set nitrogen config location and regex for wallpaper directory:
 papedir=~/.config/rice/papes/
-wallpaper="$(ls $papedir -w 1 | grep "^$theme\.[a-zA_Z]\+$")"
+wallpaper="$(ls "$papedir$theme."*)"
 
 if [ -f "$(which pape)" ] && [ "$wallpaper" ]; then
-    pape "$papedir""$wallpaper" && \
-    echo "wallpaper: $papedir$wallpaper"
+    pape "$wallpaper" && \
+    echo "wallpaper: wallpaper"
 fi
 
 # }}}
