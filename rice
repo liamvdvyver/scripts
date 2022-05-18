@@ -314,4 +314,19 @@ if [ "$(pgrep qutebrowser)" ]; then
     echo "reloaded qutebrowser"
 fi
 
+# Restart dunst
+if [ "$(pgrep dunst)" ]; then
+    pkill -f dunst
+    nohup dunst --startup_notification true > /dev/null 2>&1 &
+    echo "restarted dunst"
+
+fi
+
+# Restart flameshot
+if [ "$(pgrep flameshot)" ]; then
+    pkill -f flameshot
+    nohup flameshot > /dev/null 2>&1 &
+    echo "restarted flameshot"
+fi
+
 # }}}
