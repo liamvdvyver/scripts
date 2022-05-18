@@ -1,15 +1,10 @@
 #!/bin/sh
-# Extract dsf from SACD iso and clean directory
+# Extract dsf from SACD iso and move files
 
 file="$1"
 
 parent="$(dirname "$file")"
 cd "$parent" || exit
-
-if echo "$file" | grep -e '.+\.iso'; then
-    echo "input not a .iso file"
-    exit
-fi
 
 sacd_extract -s2C -i "$file"
 

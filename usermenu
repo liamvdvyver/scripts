@@ -10,7 +10,7 @@ if [[ $1 == "--type" ]]; then
 fi
 
 prefix=${PASSWORD_STORE_DIR-~/.password-store}
-password=$(cd "$prefix" && find * -type f -iname "*.gpg" -exec sh -c 'printf "%s\n" "${@%.gpg}"' _ {} + | dmenu -i "$@")
+password=$(cd "$prefix" && find -- * -type f -iname "*.gpg" -exec sh -c 'printf "%s\n" "${@%.gpg}"' _ {} + | dmenu -i "$@")
 
 [[ -n $password ]] || exit
 
