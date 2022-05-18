@@ -146,7 +146,7 @@ fi
 
 if [ -f $gtk3conf ]; then
     sed -i "s/^\(gtk-theme-name=\)[a-zA-Z\-]*$/\1$gtk/" $gtk3conf && \
-    sed -i "s/^\(gtk-icon-theme-name=\)[a-zA-Z]*$/\1$icon/" $gtk3conf && \
+    sed -i "s/^\(gtk-icon-theme-name=\)[a-zA-Z\-]*$/\1$icon/" $gtk3conf && \
     echo "updated $gtk3conf"
 fi
 
