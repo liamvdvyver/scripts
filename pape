@@ -2,9 +2,15 @@
 # Change wallapaper with xwallpaper
 
 usage="usage: pape <file> [--interactive]"
-papedir=~/drive/Pictures/papes/
-display="VGA-0"
 papeconf=~/.config/rice/pape
+xrandrconf=~/.config/arandr.sh
+display="$(grep -Po "[A-Z0-9\-]+(?= --primary)" $xrandrconf)"
+
+if [ "$2" ]; then
+    papedir="$2"
+else
+    papedir="$(pwd)"
+fi
 
 if [ "$1" = "--interactive" ] || [ "$1" = "-i" ]; then
     prompt="1"
