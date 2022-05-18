@@ -23,7 +23,7 @@ fi
 
 if [ "$prompt" = "1" ]; then
     if [ -f "$(which fzf-ueberzogen.sh)" ]; then
-        pape="$(find $papedir -type f | fzf-ueberzogen.sh | xargs readlink -f)"
+        pape="$(find "$papedir" -type f | sed '/\.gif$/d' | fzf-ueberzogen.sh | xargs readlink -f)"
     fi
 fi
 
