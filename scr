@@ -1,0 +1,13 @@
+#!/bin/sh
+# Take screenshot of primary xrandr display with scrot
+
+scrotdir=~/Pictures/scrot/
+xrandrconf=~/.config/arandr.sh
+
+w="$(grep -Poh "(?<=--primary --mode )[0-9]+" $xrandrconf)"
+h="$(grep -Poh "(?<=--primary --mode ($w)x)[0-9]+" $xrandrconf)"
+x="$(grep -Poh "(?<=--primary --mode ($w)x($h) --pos )[0-9]+" $xrandrconf)"
+y="$(grep -Poh "(?<=--primary --mode ($w)x($h) --pos ($x)x)[0-9]+" $xrandrconf)"
+
+cd "$scrotdir" || exit
+scrot -a "$x","$y","$w","$h"
