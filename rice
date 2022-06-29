@@ -4,7 +4,7 @@
 
 # INITAL VARIABLES --------------------------------------------------------- {{{
 
-xres=~/.Xresources  # location of Xresources config
+xres=~/.config/X11/Xresources  # location of Xresources config
 xdir=~/.config/rice/themes/ # location of theme files
 
 if [ ! -f $xres ]; then # warn if not found (required for script)
@@ -134,13 +134,13 @@ echo "gtk widget theme: $gtk"
 echo "gtk icon theme: $icon"
 
 # Location of gtk2 and gtk3 configs:
-gtk2conf=~/.gtkrc-2.0
+if [ "$GTK2_RC_FILES" ]; then gtk2conf=$GTK2_RC_FILES; else gtk2conf=~/.gtkrc-2.0; fi
 gtk3conf=~/.config/gtk-3.0/settings.ini
 
 # Set themes in config files
-if [ -f $gtk2conf ]; then
-    sed -i "s/^\(gtk-theme-name=\)\"[a-zA-Z\-]*\"$/\1\"$gtk\"/" $gtk2conf && \
-    sed -i "s/^\(gtk-icon-theme-name=\)\"[a-zA-Z\-]*\"$/\1\"$icon\"/" $gtk2conf && \
+if [ -f "$gtk2conf" ]; then
+    sed -i "s/^\(gtk-theme-name=\)\"[a-zA-Z\-]*\"$/\1\"$gtk\"/" "$gtk2conf" && \
+    sed -i "s/^\(gtk-icon-theme-name=\)\"[a-zA-Z\-]*\"$/\1\"$icon\"/" "$gtk2conf" && \
     echo "updated $gtk2conf"
 fi
 
@@ -319,7 +319,6 @@ if [ "$(pgrep dunst)" ]; then
     pkill -f dunst
     nohup dunst --startup_notification true > /dev/null 2>&1 &
     echo "restarted dunst"
-
 fi
 
 # Restart flameshot
