@@ -296,7 +296,7 @@ if [ "$(pgrep kitty)" ]; then
 fi
 
 # Find nvim server sockets and remote send command to reload config:
-nvim_socks="$(find /tmp/ -regex "/tmp/nvim[a-zA-Z0-9]+/0" -print 2>/dev/null | paste -s -d ' ')"
+nvim_socks="$(find /run/ -regex "/run/user/1000/nvim\.[a-zA-Z0-9]+\.0" -print 2>/dev/null | paste -s -d ' ')"
 if [ "$nvim_socks" ]; then
     echo "$nvim_socks" | xargs -r -n 1 nvim --remote-send "<esc>:source \$MYVIMRC<CR>" --server && \
     echo "reloaded nvim"
