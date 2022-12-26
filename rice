@@ -69,8 +69,8 @@ if [ "$toggle" ]; then # if toggle is set, set $oldtheme literally
     oldtheme="$(xrdb -query | grep "^rice\.theme:\s.\+$" | cut -f 2)"
     oldbg="$(xrdb -query | grep "^rice\.background:\s[a-z]\+$" | cut -f 2)"
     echo old
-    echo $oldtheme
-    echo $oldbg
+    echo "$oldtheme"
+    echo "$oldbg"
     if [ "$toggle" = "1"  ]; then # toggling between dark and light
         if [ "$oldbg" = "dark" ]; then
             theme="$oldtheme""-light"
