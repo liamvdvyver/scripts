@@ -328,4 +328,11 @@ if [ "$(pgrep flameshot)" ]; then
     echo "restarted flameshot"
 fi
 
+# Restart nm-applet
+if [ "$(pgrep nm-applet)" ]; then
+    pkill -f nm-applet
+    nohup nm-applet > /dev/null 2>&1 &
+    echo "restarted nm-applet"
+fi
+
 # }}}
