@@ -2,16 +2,20 @@
 # Bootstrap system after fresh Arch install
 # Note: first set up user account to run script
 
-sudo pacman -S base-devel zsh gnupg openssh git yadm networkmanager
+sudo pacman -S base-devel zsh gnupg openssh git yadm networkmanager perl
 git clone https://aur.archlinux.org/yay.git yay/
 cd yay/ || exit
 makepkg -si
 cd ~ || exit
 rm -rf yay/
 
+# Networking
+
+sudo systemctl enable NetworkManager
+
 # Import GPG keys
 
-mkdir ~/.local/share/gnupg
+mkdir -p ~/.local/share/gnupg
 export GNUPGHOME=~/.local/share/gnupg/
 
 find . -name '*.key' -exec gpg --allow-secret-key-import --import {} \;
@@ -36,7 +40,9 @@ git clone https://gitlab.com/liamvdvyver/password-store.git ~/git/password-store
 
 chsh -s /bin/zsh
 
-# Reboot
+ Reboot
 
+cat /etc/pacman.conf > pacman.conf.bak
+cat /etc/pacman.conf | perl -0pe 's/#\[multilib\]\n#Include/[multilib]\nInclude/' | sed 's/^#\(ParallelDownloads.*\)/\1/' | sudo tee /etc/pacman.conf
 echo "strap_2" >> ~/.config/zsh/.zshrc
 sudo reboot now

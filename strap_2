@@ -7,14 +7,15 @@ sed -i "/^strap_2$/d" ~/.config/zsh/.zshrc
 crypt -d
 
 # Make sure to install linux (-firmare -headers) base (-devel) networkmanager
-
-yay -S xorg-server xorg-xinit xorg-xrandr xorg-xsetroot xorg-xinput xorg-xkill \
+sudo pacman -Sy
+yay -S --norebuild --noredownload \
+    xorg-server xorg-xinit xorg-xrandr xorg-xsetroot xorg-xinput xorg-xkill \
     xorg-xev xorg-xwininfo \
-    xclip xwallpaper xdotool \
+    xclip xwallpaper xdotool xdg-user-dirs \
     i3-gaps i3lock i3status \
-    dmenu xshkd flameshot dunst pass network-manager-applet \
-    gnome-themes-extra noto-fonts ttf-hack-nerd papirus-icon-theme \
-    picom-tyrone-git hsetroot qt5-styleplugins ueberzug \
+    dmenu sxhkd flameshot dunst pass network-manager-applet \
+    gnome-themes-extra noto-fonts ttf-hack-nerd papirus-icon-theme gruvbox-icon-theme \
+    picom-tryone-git hsetroot qt5-styleplugins ueberzug \
     arandr lxappearance \
     xterm kitty \
     pulseaudio pulseaudio-alsa lib32-libpulse pavucontrol \
@@ -22,8 +23,8 @@ yay -S xorg-server xorg-xinit xorg-xrandr xorg-xsetroot xorg-xinput xorg-xkill \
     pcmanfm mpv sxiv zathura zathura-pdf-mupdf sxiv \
     exa man-db man-pages ripgrep wget \
     fd fzf tmux ranger dragon-drop \
-    htop btop ncmpcpp newsboat mutt-wizard rtv \
-    mpd mpDris2 spotifyd spotify-tui-bin playerctl \
+    htop btop ncmpcpp newsboat mutt-wizard \
+    mpd mpdris2 spotifyd spotify-tui-bin playerctl \
     perl-anyevent-i3 perl-image-exiftool perl-rename \
     r rstudio-desktop-bin gcc-fortran \
     python python-pip python-adblock \
@@ -34,20 +35,41 @@ yay -S xorg-server xorg-xinit xorg-xrandr xorg-xsetroot xorg-xinput xorg-xkill \
     texlive-most biber \
     ytfzfim yt-dlp \
     handbrake jellyfin-bin makemkv \
-    cuetools exact-audio-copy ffmpeg fooabr2000 losslessaudiochecker mp3info \
+    cuetools exact-audio-copy ffmpeg foobar2000 losslessaudiochecker mp3info \
     picard puddletag quodlibet sacd-extract \
     nicotine+ qbittorrent \
     android-file-transfer ntfs-3g \
     bridge-utils dnsmasq iptables-nft libvirt qemu-desktop vde2 virt-manager \
-    calibre joplin-desktop-bin libreoffice-still zoom \
+    calibre joplin-desktop libreoffice-still zoom \
     ledger-live-bin monero \
     nano neovim shellcheck shfmt ctags \
     cups epson-inkjet-printer-escpr \
     darktable gimp \
     barrier calibre rclone smartmontools wine-mono jdownloader2 discord unrar
 
-pip install fzf-ueberzogen
+pip install rtv pynvim
 
+mkdir -p ~/.local/lib/R
 Rscript -e "install.packages(c('languageserver', 'stringi', 'pacman'))"
 
-sudo reboot now
+# Configure ranger
+
+ranger --copy-config=scope
+git clone https://github.com/alexanderjeurissen/ranger_devicons ~/.config/ranger/plugins/ranger_devicons
+
+# Google drive
+
+rclone sync :Drive ~/drive
+
+# Directories (generate and clean)
+
+xdg-user-dirs-update
+rm .bash_history
+rm gpg_keys
+rm pacman.conf.bak
+
+# Fin
+
+echo "Bootstrap completed."
+echo "Install graphics drivers and reboot to complete setup."
+read -p "Press enter to exit."
