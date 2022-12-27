@@ -1,0 +1,42 @@
+#!/bin/sh
+# Bootstrap system after fresh Arch install
+# Note: first set up user account to run script
+
+sudo pacman -S zsh gnupg openssh git yadm
+git clone https://aur.archlinux.org/yay.git yay/
+cd yay/ || exit
+makepkg -si
+cd ~ || exit
+rm -rf yay/
+
+# Import GPG keys
+
+mkdir ~/.local/share/gnupg
+export GNUPGHOME=~/.local/share/gnupg/
+
+find . -name '*.key' -exec gpg --allow-secret-key-import --import {} \;
+find . -name '*.asc' -exec gpg --allow-secret-key-import --import {} \;
+find . -name 'pubring.kbx' -exec gpg --import {} \;
+find . -name '*ownertrust.txt' -exec gpg --import-ownertrust {} \;
+
+# Generate SSH key pair
+
+ssh-keygen -t rsa
+
+# Clone repos
+
+yadm clone https://gitlab.com/liamvdvyver/dotfiles-public.git
+
+mkdir ~/git/
+git clone https://gitlab.com/liamvdvyver/dotfiles-secret.git ~/git/dotfiles-secret/
+git clone https://gitlab.com/liamvdvyver/scripts.git ~/git/scripts/
+git clone https://gitlab.com/liamvdvyver/password-store.git ~/git/password-store/
+
+# Set shell to ZSH
+
+chsh -s /bin/zsh
+
+# Reboot
+
+echo "strap_2" >> "$ZDOTDIR/.zshrc"
+sudo reboot now
