@@ -2,7 +2,7 @@
 # Bootstrap system after fresh Arch install
 # Note: first set up user account to run script
 
-sudo pacman -S zsh gnupg openssh git yadm
+sudo pacman -S base-devel zsh gnupg openssh git yadm networkmanager
 git clone https://aur.archlinux.org/yay.git yay/
 cd yay/ || exit
 makepkg -si
@@ -28,8 +28,8 @@ ssh-keygen -t rsa
 yadm clone https://gitlab.com/liamvdvyver/dotfiles-public.git
 
 mkdir ~/git/
-git clone https://gitlab.com/liamvdvyver/dotfiles-secret.git ~/git/dotfiles-secret/
 git clone https://gitlab.com/liamvdvyver/scripts.git ~/git/scripts/
+git clone https://gitlab.com/liamvdvyver/dotfiles-secret.git ~/git/dotfiles-secret/
 git clone https://gitlab.com/liamvdvyver/password-store.git ~/git/password-store/
 
 # Set shell to ZSH
@@ -38,5 +38,5 @@ chsh -s /bin/zsh
 
 # Reboot
 
-echo "strap_2" >> "$ZDOTDIR/.zshrc"
+echo "strap_2" >> ~/.config/zsh/.zshrc
 sudo reboot now

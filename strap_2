@@ -1,54 +1,50 @@
 # Restore zshrc after reboot
 
-sed -i "/^strap_2$/d" "$ZDOTDIR/.zshrc"
+sed -i "/^strap_2$/d" ~/.config/zsh/.zshrc
 
 # Decrypt secrets
 
 crypt -d
 
-# Download google drive folder
-
-rdd
-
 # Make sure to install linux (-firmare -headers) base (-devel) networkmanager
 
-p -S xorg-server xorg-xinit xorg-xrandr xorg-xsetroot xorg-xinput xorg-xkill \  # Xorg
-     xorg-xev xorg-xwininfo \                                                   # Xorg extra
-     xclip xwallpaper xdotool \                                                 # Basic X functionality
-     i3-gaps i3lock i3status \                                                  # i3 setup
-     dmenu xshkd flameshot dunst pass network-manager-applet \
-     gnome-themes-extra noto-fonts ttf-hack-nerd papirus-icon-theme \           # Themes, fonts
-     picom-tyrone-git hsetroot qt5-styleplugins ueberzug\                       # Basic GUI functionality
-     arandr lxappearance \                                                      # GUI configuration
-     xterm kitty \                                                              # Terminal emulators
-     pulseaudio pulseaudio-alsa lib32-libpulse pavucontrol \                    # Pulse Audio
-     qutebrowser pdfjs-legacy brave-bin lynx \                                  # Web browsing
-     pcmanfm mpv sxiv zathura zathura-pdf-mupdf sxiv \                          # Basic GUI apps
-     exa man-db man-pages ripgrep wget \                                        # Basic CLI apps
-     fd fzf tmux ranger dragon-drop \                                           # Basic TUI apps
-     htop btop ncmpcpp newsboat mutt-wizard rtv \                               # More TUI
-     mpd mpDris2 spotifyd spotify-tui-bin playerctl \                           # Music playback
-     perl-anyevent-i3 perl-image-exiftool perl-rename \                         # Perl
-     r rstudio-desktop-bin gcc-fortran \                                        # R
-     python python-pip python-adblock \                                         # Python
-     zsh-autosuggestions zsh-sudo-git zsh-syntax-highlighting \                 # Zsh
-     zsh-you-should-use \
-     bash-complete-alias bash-completion \                                      # Bash
-     cowsay figlet fortune-mod lolcat neofetch pfetch unimatrix-git \           # Rice stuff
-     texlive-most biber \                                                       # LaTeX
-     ytfzfim yt-dlp \                                                           # YouTube
-     handbrake jellyfin-bin makemkv \                                           # Video
-     cuetools exact-audio-copy ffmpeg fooabr2000 losslessaudiochecker mp3info \ # Music management
-     picard puddletag quodlibet sacd-extract \
-     nicotine+ qbittorrent \                                                    # Filesharing
-     android-file-transfer ntfs-3g \                                            # Android mount
-     bridge-utils dnsmasq iptables-nft libvirt qemu-desktop vde2 virt-manager \ # KVM
-     calibre joplin-desktop-bin libreoffice-still zoom \                        # School
-     ledger-live-bin monero \                                                   # Crypto
-     nano neovim shellcheck shfmt ctags \                                       # Text editing
-     cups epson-inkjet-printer-escpr \                                          # Printing
-     darktable gimp \                                                           # Photo editing
-     barrier calibre rclone smartmontools wine-mono jdownloader2 discord unrar  # Misc
+yay -S xorg-server xorg-xinit xorg-xrandr xorg-xsetroot xorg-xinput xorg-xkill \
+    xorg-xev xorg-xwininfo \
+    xclip xwallpaper xdotool \
+    i3-gaps i3lock i3status \
+    dmenu xshkd flameshot dunst pass network-manager-applet \
+    gnome-themes-extra noto-fonts ttf-hack-nerd papirus-icon-theme \
+    picom-tyrone-git hsetroot qt5-styleplugins ueberzug \
+    arandr lxappearance \
+    xterm kitty \
+    pulseaudio pulseaudio-alsa lib32-libpulse pavucontrol \
+    qutebrowser pdfjs-legacy brave-bin lynx \
+    pcmanfm mpv sxiv zathura zathura-pdf-mupdf sxiv \
+    exa man-db man-pages ripgrep wget \
+    fd fzf tmux ranger dragon-drop \
+    htop btop ncmpcpp newsboat mutt-wizard rtv \
+    mpd mpDris2 spotifyd spotify-tui-bin playerctl \
+    perl-anyevent-i3 perl-image-exiftool perl-rename \
+    r rstudio-desktop-bin gcc-fortran \
+    python python-pip python-adblock \
+    zsh-autosuggestions zsh-sudo-git zsh-syntax-highlighting \
+    zsh-you-should-use \
+    bash-complete-alias bash-completion \
+    cowsay figlet fortune-mod lolcat neofetch pfetch unimatrix-git \
+    texlive-most biber \
+    ytfzfim yt-dlp \
+    handbrake jellyfin-bin makemkv \
+    cuetools exact-audio-copy ffmpeg fooabr2000 losslessaudiochecker mp3info \
+    picard puddletag quodlibet sacd-extract \
+    nicotine+ qbittorrent \
+    android-file-transfer ntfs-3g \
+    bridge-utils dnsmasq iptables-nft libvirt qemu-desktop vde2 virt-manager \
+    calibre joplin-desktop-bin libreoffice-still zoom \
+    ledger-live-bin monero \
+    nano neovim shellcheck shfmt ctags \
+    cups epson-inkjet-printer-escpr \
+    darktable gimp \
+    barrier calibre rclone smartmontools wine-mono jdownloader2 discord unrar
 
 pip install fzf-ueberzogen
 
