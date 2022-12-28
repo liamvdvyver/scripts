@@ -1,3 +1,4 @@
+#!/bin/sh
 # Restore zshrc after reboot
 
 sed -i "/^strap_2$/d" ~/.config/zsh/.zshrc
@@ -57,14 +58,30 @@ Rscript -e "install.packages(c('languageserver', 'stringi', 'pacman'))"
 ranger --copy-config=scope
 git clone https://github.com/alexanderjeurissen/ranger_devicons ~/.config/ranger/plugins/ranger_devicons
 
+# Configure nvim
+
+nvim --headless +PlugInstall +CocInstall +qa
+
 # Google drive
 
-rclone sync :Drive ~/drive
+rclone sync Drive: ~/drive
+
+# KVM
+
+sudo systemctl enable libvirtd
+uname=$(whoami)
+sudo usermod -aG libvirt "$uname"
+cp /etc/libvirt/libvirtd.conf ~/libvirtd.conf.bak
+sudo sed -i 's/#\(unix_sock_group = .libvirt.\)/\1/;s/#\(unix_sock_rw_perms = .0770.\)/\1/' /etc/libvirt/libvirtd.conf
+cp /etc/libvirt/qemu.conf ~/qemu.conf.bak
+sudo sed -i "s/#user = \"libvirt-qemu\"/user = $uname/;s/#group = \"libvirt-qemu\"/group = $uname/" /etc/libvirt/qemu.conf
 
 # Directories (generate and clean)
 
 xdg-user-dirs-update
 rm .bash_history
+rm .bash_profile
+rm .bash_logout
 rm gpg_keys
 rm pacman.conf.bak
 
