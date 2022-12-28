@@ -2,7 +2,17 @@
 # Bootstrap system after fresh Arch install
 # Note: first set up user account to run script
 
-sudo pacman -Syu base-devel zsh gnupg openssh git yadm networkmanager perl
+sudo pacman -Syu base-devel pacman-contrib
+
+# Rank mirrors (from arch wiki)
+
+sudo cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.backup
+sudo awk '/^## Australia$/{f=1; next}f==0{next}/^$/{exit}{print substr($0, 1);}' /etc/pacman.d/mirrorlist.backup
+rankmirrors -n 6 /etc/pacman.d/mirrorlist.backup | sudo tee /etc/pacman.d/mirrorlist
+sudo pacman -Syyuu
+
+sudo pacman -Syu zsh gnupg openssh git yadm networkmanager perl
+
 git clone https://aur.archlinux.org/yay.git yay/
 cd yay/ || exit
 makepkg -si
