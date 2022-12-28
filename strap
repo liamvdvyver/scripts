@@ -23,18 +23,19 @@ find . -name '*.asc' -exec gpg --allow-secret-key-import --import {} \;
 find . -name 'pubring.kbx' -exec gpg --import {} \;
 find . -name '*ownertrust.txt' -exec gpg --import-ownertrust {} \;
 
-# Generate SSH key pair
+# Add bootstrap key to ssh-agent
 
-ssh-keygen -t rsa
+eval "$(ssh-agent -s)"
+ssh-add ~/.ssh/strap_rsa
 
 # Clone repos
 
-yadm clone https://gitlab.com/liamvdvyver/dotfiles-public.git
+yadm clone git@gitlab.com:liamvdvyver/dotfiles-public.git
 
 mkdir ~/git/
-git clone https://gitlab.com/liamvdvyver/scripts.git ~/git/scripts/
-git clone https://gitlab.com/liamvdvyver/dotfiles-secret.git ~/git/dotfiles-secret/
-git clone https://gitlab.com/liamvdvyver/password-store.git ~/git/password-store/
+git clone git@gitlab.com:liamvdvyver/scripts.git ~/git/scripts/
+git clone git@gitlab.com:liamvdvyver/dotfiles-secret.git ~/git/dotfiles-secret/
+git clone git@gitlab.com:liamvdvyver/password-store.git ~/git/password-store/
 
 # Set shell to ZSH
 
