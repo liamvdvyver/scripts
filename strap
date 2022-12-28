@@ -9,8 +9,13 @@ sudo pacman -Syu base-devel pacman-contrib
 sudo cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.backup
 sudo awk '/^## Australia$/{f=1; next}f==0{next}/^$/{exit}{print substr($0, 1);}' /etc/pacman.d/mirrorlist.backup
 rankmirrors -n 6 /etc/pacman.d/mirrorlist.backup | sudo tee /etc/pacman.d/mirrorlist
-sudo pacman -Syyuu
 
+# Enable parallel downloads and multilib
+
+cat /etc/pacman.conf > pacman.conf.bak
+cat /etc/pacman.conf | perl -0pe 's/#\[multilib\]\n#Include/[multilib]\nInclude/' | sed 's/^#\(ParallelDownloads.*\)/\1/' | sudo tee /etc/pacman.conf
+
+sudo pacman -Syyuu
 sudo pacman -Syu zsh gnupg openssh git yadm networkmanager perl
 
 git clone https://aur.archlinux.org/yay.git yay/
@@ -53,7 +58,5 @@ chsh -s /bin/zsh
 
 # Reboot
 
-cat /etc/pacman.conf > pacman.conf.bak
-cat /etc/pacman.conf | perl -0pe 's/#\[multilib\]\n#Include/[multilib]\nInclude/' | sed 's/^#\(ParallelDownloads.*\)/\1/' | sudo tee /etc/pacman.conf
 echo "strap_2" >> ~/.config/zsh/.zshrc
 sudo reboot now
