@@ -2,6 +2,81 @@
 # Bootstrap system after fresh Arch install
 # Note: first set up user account to run script
 
+# Get input ---------------------------------------------------------------- {{{
+
+check_pwsafe() {
+    printf "Safe to display password on screen? (y/N): "
+    read -r pwsafe_reply
+    if [ "$pwsafe_reply" = "" ] || [ "$pwsafe_reply" = "n" ] || [ "$pwsafe_reply" = "N" ]; then
+        pwsafe="n"
+    elif [ "$pwsafe_reply" = "y" ] || [ "$pwsafe_reply" = "Y" ]; then
+        pwsafe="y"
+    else
+        check_pwsafe
+    fi
+}
+
+read_password_unsafe() {
+  password="$(
+    # always read from the tty even when redirected:
+    exec < /dev/tty || exit # || exit only needed for bash
+
+    # save current tty settings:
+    tty_settings=$(stty -g) || exit
+
+    # schedule restore of the settings on exit of that subshell
+    # or on receiving SIGINT or SIGTERM:
+    trap 'stty "$tty_settings"' EXIT INT TERM
+
+    # disable terminal local echo
+    stty -echo || exit
+
+    # prompt on tty
+    if [ "$1" = "2" ]; then
+        printf "    Confirm password : " > /dev/tty
+    else
+        printf "    Password: " > /dev/tty
+    fi
+
+    # read password as one line, record exit status
+    IFS= read -r password; ret=$?
+
+    # display a newline to visually acknowledge the entered password
+    echo > /dev/tty
+
+    # return the password for $password
+    printf '%s\n' "$password"
+    exit "$ret"
+  )"
+}
+
+read_password() {
+    if [ ! "$pwsafe" = "y" ] && [ ! "$pwsafe" = "n" ]; then check_pwsafe; fi
+    if [ "$pwsafe" = "y" ]; then
+        printf "    Password: "
+        read -r password
+    elif [ "$pwsafe" = "n" ]; then
+        read_password_unsafe "1"
+        password_1=$password
+        read_password_unsafe "2"
+        password_2=$password
+        if [ ! "$password_1" = "$password_2" ]; then 
+            echo "Passwords do not match."
+            read_password
+        fi
+    fi
+}
+
+echo "Enter password to import GPG key (or leave blank):"
+read_password
+gpg_password="$password"
+
+echo "Enter password to decypt dotfiles (or leave blank):"
+read_password
+yadm_password="$password"
+
+# }}}
+
 # Initial clean ------------------------------------------------------------ {{{
 
 rm .bashrc
@@ -41,11 +116,12 @@ rm -rf yay/
 
 mkdir -p ~/.local/share/gnupg
 export GNUPGHOME=~/.local/share/gnupg/
+export GPG_AGENT_INFO=""
 
-find . -name '*.key' -exec gpg --allow-secret-key-import --import {} \;
-find . -name '*.asc' -exec gpg --allow-secret-key-import --import {} \;
-find . -name 'pubring.kbx' -exec gpg --import {} \;
-find . -name '*ownertrust.txt' -exec gpg --import-ownertrust {} \;
+find . -name '*.key' -exec sh -c "echo "$gpg_password" | gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 --allow-secret-key-import --import {}" \;
+find . -name '*.asc' -exec sh -c "echo "$gpg_password" | gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 --allow-secret-key-import --import {}" \;
+find . -name 'pubring.kbx' -exec sh -c "echo "$gpg_password" | gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 --import {}" \;
+find . -name '*ownertrust.txt' -exec sh -c "echo "$gpg_password" | gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 --import-ownertrust {}" \;
 
 # }}}
 
@@ -65,7 +141,7 @@ git clone git@gitlab.com:liamvdvyver/dotfiles-secret.git ~/git/dotfiles-secret/
 git clone git@gitlab.com:liamvdvyver/password-store.git ~/git/password-store/
 
 # Decrypt secrets
-~/git/scripts/crypt -d
+echo "$yadm_password" | gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 -d ~/git/dotfiles-secret/archive | tar xvf
 
 # }}}
 
