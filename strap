@@ -13,7 +13,7 @@ rm .bash_logout
 # Configure pacman and yay ------------------------------------------------- {{{
 
 # Basic packages to configure pacman
-sudo pacman -Syu base-devel pacman-contrib
+sudo pacman -Syu --noconfirm base-devel pacman-contrib
 
 # Rank mirrors (from arch wiki)
 sudo cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.backup
@@ -25,13 +25,13 @@ cat /etc/pacman.conf > pacman.conf.bak
 cat /etc/pacman.conf | perl -0pe 's/#\[multilib\]\n#Include/[multilib]\nInclude/' | sed 's/^#\(ParallelDownloads.*\)/\1/' | sudo tee /etc/pacman.conf
 
 # Refresh and install dependencies for script
-sudo pacman -Syyuu
-sudo pacman -Syu zsh gnupg openssh git yadm networkmanager perl rclone
+sudo pacman -Syyuu --noconfirm
+sudo pacman -Syu --noconfirm zsh gnupg openssh git yadm networkmanager perl rclone
 
 # Install yay
 git clone https://aur.archlinux.org/yay.git yay/
 cd yay/ || exit
-makepkg -si
+makepkg -si --noconfirm
 cd ~ || exit
 rm -rf yay/
 
@@ -52,6 +52,7 @@ find . -name '*ownertrust.txt' -exec gpg --import-ownertrust {} \;
 # Clone remotes ------------------------------------------------------------ {{{
 
 # Add bootstrap key to ssh-agent
+ssh -o StrictHostKeyChecking=no git@gitlab.com
 eval "$(ssh-agent -s)"
 ssh-add ~/.ssh/strap_rsa
 
@@ -71,8 +72,8 @@ git clone git@gitlab.com:liamvdvyver/password-store.git ~/git/password-store/
 # Install software --------------------------------------------------------- {{{
 
 # Make sure to install linux (-firmare -headers) base (-devel) networkmanager
-sudo pacman -Sy
-yay -S --norebuild --noredownload \
+sudo pacman -Sy --noconfirm
+yay -S --noconfirm --norebuild --noredownload --ask 4 \
     xorg-server xorg-xinit xorg-xrandr xorg-xsetroot xorg-xinput xorg-xkill \
     xorg-xev xorg-xwininfo \
     xclip xwallpaper xdotool xdg-user-dirs \
@@ -143,7 +144,7 @@ cp /etc/libvirt/qemu.conf ~/qemu.conf.bak
 sudo sed -i "s/#user = \"libvirt-qemu\"/user = $uname/;s/#group = \"libvirt-qemu\"/group = $uname/" /etc/libvirt/qemu.conf
 
 # Set shell to ZSH
-chsh -s /bin/zsh
+sudo chsh -s "$(which zsh)" "$(whoami)"
 
 # }}}
 
