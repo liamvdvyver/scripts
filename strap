@@ -2,33 +2,42 @@
 # Bootstrap system after fresh Arch install
 # Note: first set up user account to run script
 
+# Initial clean ------------------------------------------------------------ {{{
+
+rm .bashrc
+rm .bash_profile
+rm .bash_logout
+
+# }}}
+
+# Configure pacman and yay ------------------------------------------------- {{{
+
+# Basic packages to configure pacman
 sudo pacman -Syu base-devel pacman-contrib
 
 # Rank mirrors (from arch wiki)
-
 sudo cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.backup
 sudo awk '/^## Australia$/{f=1; next}f==0{next}/^$/{exit}{print substr($0, 1);}' /etc/pacman.d/mirrorlist.backup
 rankmirrors -n 6 /etc/pacman.d/mirrorlist.backup | sudo tee /etc/pacman.d/mirrorlist
 
 # Enable parallel downloads and multilib
-
 cat /etc/pacman.conf > pacman.conf.bak
 cat /etc/pacman.conf | perl -0pe 's/#\[multilib\]\n#Include/[multilib]\nInclude/' | sed 's/^#\(ParallelDownloads.*\)/\1/' | sudo tee /etc/pacman.conf
 
+# Refresh and install dependencies for script
 sudo pacman -Syyuu
-sudo pacman -Syu zsh gnupg openssh git yadm networkmanager perl
+sudo pacman -Syu zsh gnupg openssh git yadm networkmanager perl rclone
 
+# Install yay
 git clone https://aur.archlinux.org/yay.git yay/
 cd yay/ || exit
 makepkg -si
 cd ~ || exit
 rm -rf yay/
 
-# Networking
+# }}}
 
-sudo systemctl enable NetworkManager
-
-# Import GPG keys
+# GPG Keys ----------------------------------------------------------------- {{{
 
 mkdir -p ~/.local/share/gnupg
 export GNUPGHOME=~/.local/share/gnupg/
@@ -38,13 +47,15 @@ find . -name '*.asc' -exec gpg --allow-secret-key-import --import {} \;
 find . -name 'pubring.kbx' -exec gpg --import {} \;
 find . -name '*ownertrust.txt' -exec gpg --import-ownertrust {} \;
 
-# Add bootstrap key to ssh-agent
+# }}}
 
+# Clone remotes ------------------------------------------------------------ {{{
+
+# Add bootstrap key to ssh-agent
 eval "$(ssh-agent -s)"
 ssh-add ~/.ssh/strap_rsa
 
 # Clone repos
-
 yadm clone git@gitlab.com:liamvdvyver/dotfiles-public.git
 
 mkdir ~/git/
@@ -52,11 +63,98 @@ git clone git@gitlab.com:liamvdvyver/scripts.git ~/git/scripts/
 git clone git@gitlab.com:liamvdvyver/dotfiles-secret.git ~/git/dotfiles-secret/
 git clone git@gitlab.com:liamvdvyver/password-store.git ~/git/password-store/
 
-# Set shell to ZSH
+# Decrypt secrets
+~/git/scripts/crypt -d
 
+# }}}
+
+# Install software --------------------------------------------------------- {{{
+
+# Make sure to install linux (-firmare -headers) base (-devel) networkmanager
+sudo pacman -Sy
+yay -S --norebuild --noredownload \
+    xorg-server xorg-xinit xorg-xrandr xorg-xsetroot xorg-xinput xorg-xkill \
+    xorg-xev xorg-xwininfo \
+    xclip xwallpaper xdotool xdg-user-dirs \
+    i3-gaps i3lock i3status \
+    dmenu sxhkd flameshot dunst pass network-manager-applet \
+    gnome-themes-extra noto-fonts ttf-hack-nerd papirus-icon-theme gruvbox-icon-theme \
+    picom-tryone-git hsetroot qt5-styleplugins ueberzug \
+    arandr lxappearance \
+    xterm kitty \
+    pulseaudio pulseaudio-alsa lib32-libpulse pavucontrol \
+    qutebrowser pdfjs-legacy brave-bin lynx networkmanager \
+    pcmanfm mpv sxiv zathura zathura-pdf-mupdf sxiv \
+    exa man-db man-pages ripgrep wget \
+    fd fzf tmux ranger dragon-drop \
+    htop btop ncmpcpp newsboat mutt-wizard \
+    mpd mpdris2 spotifyd spotify-tui-bin playerctl \
+    perl-anyevent-i3 perl-image-exiftool perl-rename \
+    r rstudio-desktop-bin gcc-fortran \
+    python python-pip python-adblock \
+    zsh-autosuggestions zsh-sudo-git zsh-syntax-highlighting \
+    zsh-you-should-use \
+    bash-complete-alias bash-completion \
+    cowsay figlet fortune-mod lolcat neofetch pfetch unimatrix-git \
+    texlive-most biber \
+    ytfzfim yt-dlp \
+    handbrake jellyfin-bin makemkv \
+    cuetools exact-audio-copy ffmpeg foobar2000 losslessaudiochecker mp3info \
+    picard puddletag quodlibet sacd-extract \
+    nicotine+ qbittorrent \
+    android-file-transfer ntfs-3g \
+    bridge-utils dnsmasq iptables-nft libvirt qemu-desktop vde2 virt-manager \
+    calibre joplin-desktop libreoffice-still zoom \
+    ledger-live-bin monero \
+    nano neovim shellcheck shfmt ctags \
+    cups epson-inkjet-printer-escpr \
+    darktable gimp \
+    barrier calibre smartmontools wine-mono jdownloader2 discord unrar
+
+pip install rtv pynvim
+
+mkdir -p ~/.local/lib/R
+Rscript -e "install.packages(c('languageserver', 'stringi', 'pacman'))"
+
+# }}}
+
+# Configure software ------------------------------------------------------- {{{
+
+# Ranger
+ranger --copy-config=scope
+git clone https://github.com/alexanderjeurissen/ranger_devicons ~/.config/ranger/plugins/ranger_devicons
+
+# Neovim
+nvim --headless +PlugInstall +CocInstall +qa
+
+# NetworkManager
+sudo systemctl enable NetworkManager
+
+# Google drive
+rclone sync Drive: ~/drive
+
+# KVM
+sudo systemctl enable libvirtd
+uname=$(whoami)
+sudo usermod -aG libvirt "$uname"
+cp /etc/libvirt/libvirtd.conf ~/libvirtd.conf.bak
+sudo sed -i 's/#\(unix_sock_group = .libvirt.\)/\1/;s/#\(unix_sock_rw_perms = .0770.\)/\1/' /etc/libvirt/libvirtd.conf
+cp /etc/libvirt/qemu.conf ~/qemu.conf.bak
+sudo sed -i "s/#user = \"libvirt-qemu\"/user = $uname/;s/#group = \"libvirt-qemu\"/group = $uname/" /etc/libvirt/qemu.conf
+
+# Set shell to ZSH
 chsh -s /bin/zsh
 
-# Reboot
+# }}}
 
-echo "strap_2" >> ~/.config/zsh/.zshrc
-sudo reboot now
+# Final clean and generate dirs -------------------------------------------- {{{
+
+xdg-user-dirs-update
+rm gpg_keys
+rm pacman.conf.bak
+
+echo "Bootstrap completed."
+echo "Install graphics drivers and reboot to complete setup."
+read -p "Press enter to exit."
+
+# }}}
