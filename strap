@@ -71,9 +71,17 @@ echo "Enter password to import GPG key (or leave blank):"
 read_password
 gpg_password="$password"
 
+echo "Enter email used for GPG key (not a password):"
+read_password
+gpg_email="$password"
+
 echo "Enter password to decypt dotfiles (or leave blank):"
 read_password
 yadm_password="$password"
+
+echo "Enter password to use for SSH key pair generation (or leave blank):"
+read_password
+ssh_password="$password"
 
 # }}}
 
@@ -96,7 +104,7 @@ sudo awk '/^## Australia$/{f=1; next}f==0{next}/^$/{exit}{print substr($0, 1);}'
 rankmirrors -n 6 /etc/pacman.d/mirrorlist.backup | sudo tee /etc/pacman.d/mirrorlist
 
 # Enable parallel downloads and multilib
-cat /etc/pacman.conf > pacman.conf.bak
+if [ ! -f "/etc/pacman.conf.bak " ]; then cat /etc/pacman.conf > pacman.conf.bak; fi
 cat /etc/pacman.conf | perl -0pe 's/#\[multilib\]\n#Include/[multilib]\nInclude/' | sed 's/^#\(ParallelDownloads.*\)/\1/' | sudo tee /etc/pacman.conf
 
 # Refresh and install dependencies for script
@@ -141,7 +149,7 @@ git clone git@gitlab.com:liamvdvyver/dotfiles-secret.git ~/git/dotfiles-secret/
 git clone git@gitlab.com:liamvdvyver/password-store.git ~/git/password-store/
 
 # Decrypt secrets
-echo "$yadm_password" | gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 -d ~/git/dotfiles-secret/archive | tar xvf
+echo "$yadm_password" | gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 -d ~/git/dotfiles-secret/archive | tar xvf -
 
 # }}}
 
@@ -155,7 +163,7 @@ yay -S --noconfirm --norebuild --noredownload --ask 4 \
     xclip xwallpaper xdotool xdg-user-dirs \
     i3-gaps i3lock i3status \
     dmenu sxhkd flameshot dunst pass network-manager-applet \
-    gnome-themes-extra noto-fonts ttf-hack-nerd papirus-icon-theme gruvbox-icon-theme \
+    gnome-themes-extra noto-fonts ttf-hack-nerd papirus-icon-theme gruvbox-dark-icons-gtk \
     picom-tryone-git hsetroot qt5-styleplugins ueberzug \
     arandr lxappearance \
     xterm kitty \
@@ -181,7 +189,7 @@ yay -S --noconfirm --norebuild --noredownload --ask 4 \
     nicotine+ qbittorrent \
     android-file-transfer ntfs-3g \
     bridge-utils dnsmasq iptables-nft libvirt qemu-desktop vde2 virt-manager \
-    calibre joplin-desktop libreoffice-still zoom \
+    calibre joplin-appimage libreoffice-still zoom \
     ledger-live-bin monero \
     nano neovim shellcheck shfmt ctags \
     cups epson-inkjet-printer-escpr \
@@ -202,7 +210,7 @@ ranger --copy-config=scope
 git clone https://github.com/alexanderjeurissen/ranger_devicons ~/.config/ranger/plugins/ranger_devicons
 
 # Neovim
-nvim --headless +PlugInstall +CocInstall +qa
+nvim --headless +PlugInstall +qa
 
 # NetworkManager
 sudo systemctl enable NetworkManager
@@ -219,16 +227,42 @@ sudo sed -i 's/#\(unix_sock_group = .libvirt.\)/\1/;s/#\(unix_sock_rw_perms = .0
 cp /etc/libvirt/qemu.conf ~/qemu.conf.bak
 sudo sed -i "s/#user = \"libvirt-qemu\"/user = $uname/;s/#group = \"libvirt-qemu\"/group = $uname/" /etc/libvirt/qemu.conf
 
+# Calibre
+cd ~ || exit
+git clone https://github.com/PapirusDevelopmentTeam/papirus-calibre-theme.git
+cd papirus-calibre-theme || exit
+make build
+make install
+cd ~ || exit
+rm -r papirus-calibre-theme
+
 # Set shell to ZSH
 sudo chsh -s "$(which zsh)" "$(whoami)"
+
+# }}}
+
+# Generate SSH key pair ---------------------------------------------------- {{{
+
+ssh-keygen -f ~/.ssh/id_rsa -N "$ssh_password"
+cd ~/git/password-store/ || exit
+ssh_pass="system/""$(hostnamectl --static)""-ssh"
+echo "$ssh_password" > "$ssh_pass"
+echo "$gpg_password" | gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 -r "$gpg_email" -e "$ssh_pass"
+rm "$ssh_pass"
+git commit -am "Add given password for ""$ssh_pass"" to store."
 
 # }}}
 
 # Final clean and generate dirs -------------------------------------------- {{{
 
 xdg-user-dirs-update
+rm .bash_history
 rm gpg_keys
 rm pacman.conf.bak
+rm libvirtd.conf.bak
+rm qemu.conf.bak
+rm -r gpg
+rm strap
 
 echo "Bootstrap completed."
 echo "Install graphics drivers and reboot to complete setup."
