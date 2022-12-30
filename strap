@@ -127,8 +127,7 @@ export GNUPGHOME=~/.local/share/gnupg/
 export GPG_AGENT_INFO=""
 
 find . -name '*.key' -exec sh -c "echo "$gpg_password" | gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 --allow-secret-key-import --import {}" \;
-find . -name '*.asc' -exec sh -c "echo "$gpg_password" | gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 --allow-secret-key-import --import {}" \;
-find . -name 'pubring.kbx' -exec sh -c "echo "$gpg_password" | gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 --import {}" \;
+find . -name '*.asc' -exec sh -c "echo "$gpg_password" | gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 --allow-secret-key-import --import {}" \; find . -name 'pubring.kbx' -exec sh -c "echo "$gpg_password" | gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 --import {}" \;
 find . -name '*ownertrust.txt' -exec sh -c "echo "$gpg_password" | gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 --import-ownertrust {}" \;
 
 # }}}
@@ -206,6 +205,10 @@ Rscript -e "install.packages(c('languageserver', 'stringi', 'pacman'))"
 
 # Configure software ------------------------------------------------------- {{{
 
+# Bash
+# TODO: test this
+export HISTFILE="$XDG_DATA_HOME/bash_history"
+
 # Ranger
 ranger --copy-config=scope
 git clone https://github.com/alexanderjeurissen/ranger_devicons ~/.config/ranger/plugins/ranger_devicons
@@ -262,7 +265,7 @@ rm ~/.bash_history
 rm ~/pacman.conf.bak
 rm ~/libvirtd.conf.bak
 rm ~/qemu.conf.bak
-rm ~/-r gpg
+rm -r ~/ gpg
 rm ~/strap
 
 echo "Bootstrap completed."
