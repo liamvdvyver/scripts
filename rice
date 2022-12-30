@@ -272,6 +272,22 @@ fi
 
 # }}}
 
+# SET FLAMESHOT COLOURS ---------------------------------------------------- {{{
+
+flameconf=~/.config/flameshot/flameshot.ini # set dunst config location
+flamebg=$(xrdb -query | grep '^\*background:\s#[a-zA-Z0-9]\{6\}$' | cut -f 2)
+flamefg=$(xrdb -query | grep '^\*foreground:\s#[a-zA-Z0-9]\{6\}$' | cut -f 2)
+
+if [ -f $flameconf ]; then
+    sed -i "s/^\(uiColor=\)#[a-zA-Z0-9]\{6\}$/\1$flamebg/" $flameconf
+    sed -i "s/^\(contrastUiColor=\)#[a-zA-Z0-9]\{6\}$/\1$flamefg/" $flameconf
+fi
+
+cat $flameconf
+
+
+# }}}
+
 # SET WALLPAPER ------------------------------------------------------------ {{{
 
 # Set nitrogen config location and regex for wallpaper directory:
