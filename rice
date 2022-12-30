@@ -280,7 +280,7 @@ wallpaper="$(ls "$papedir$theme."*)"
 
 if [ -f "$(which pape)" ] && [ "$wallpaper" ]; then
     pape "$wallpaper" && \
-    echo "wallpaper: wallpaper"
+    echo "wallpaper: $wallpaper"
 fi
 
 # }}}
