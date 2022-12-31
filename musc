@@ -54,3 +54,6 @@ for i in **/*.txt; do
         mv -i "$i" other/info.txt
     fi
 done
+
+# remove empty folders
+find . -type d -empty -delete
