@@ -7,8 +7,9 @@ if [ "$1" = "-s" ] || [ "$1" = "--stream" ]; then
     stream=true
 fi
 
-# remove all whitespace from names
+# remove all whitespace and single quotes from names
 find ./ -name '* *' -execdir perl-rename 's/ //g' {} +
+find ./ -name '*'\''*' -execdir perl-rename 's/'\''//g' {} +
 
 # move art folder
 mv -i Artwork/ art/
@@ -24,12 +25,15 @@ if ! [ "$stream" = "true" ]; then
 fi
 
 # move files
-find ./ -iregex "\(?i\).*\.cue$" -exec mv -i {} other/disc.cue \;
+find ./ -iname "disc\.cue" -exec mv -i {} other/disc.cue \;
 find ./ -iregex ".*\.url$" -exec mv -i {} source/source.url \;
 find ./ -iregex ".*\.torrent$" -exec mv -i {} source/source.torrent \;
 find ./ -iregex ".*\.accurip$" -exec mv -i {} other/disc.accurip \;
 find ./ -iname "front.jpg" -exec mv -i {} art/front.jpg \;
+find ./ -iname "front.png" -exec mv -i {} art/front.png \;
 find ./ -iregex ".*\.jpg" -exec mv -i {} art/ \;
+find ./ -iregex ".*\.jpeg" -exec mv -i {} art/ \;
+find ./ -iregex ".*\.png" -exec mv -i {} art/ \;
 find ./ -iname "info.txt" -exec mv -i {} other/info.txt \;
 find ./ -iregex ".*\.m3u$" -delete
 
