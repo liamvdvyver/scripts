@@ -1,40 +1,53 @@
 #!/bin/sh
 # Sort music files tagged by picards
-
 # set $file
 file="$1"
+
+sanitise()
+{
+    echo "$1" | sed -z 's/\n/, /g;s/, $/\n/;s/\//-/g;s/^0*//g'
+}
 
 # get tags from flac
 if file "$file" | grep -e "FLAC audio"; then
     ext="flac"
-    albumartist="$(metaflac --show-tag=ALBUMARTIST "$file" | sed 's/^ALBUMARTIST=//')"
-    #echo "albumartist: $albumartist"
-    album="$(metaflac --show-tag=ALBUM "$file" | sed 's/^ALBUM=//')"
-    #echo "album: $album"
-    title="$(metaflac --show-tag=TITLE "$file" | sed 's/^TITLE=//')"
-    #echo "title: $title"
-    year="$(metaflac --show-tag=DATE "$file" | sed -e 's/^DATE=//' -e 's/\([0-9]\{4\}\).*/\1/')"
-    #echo "year: $year"
-    oriyear="$(metaflac --show-tag=ORIGINALDATE "$file" | sed -e 's/^ORIGINALDATE=//' -e 's/\([0-9]\{4\}\).*/\1/')"
-    #echo "oriyear: $oriyear"
-    media="$(metaflac --show-tag=MEDIA "$file" | sed 's/^MEDIA=//')"
-    #echo "media: $media"
-    label="$(metaflac --show-tag=LABEL "$file" | sed 's/^LABEL=//')"
-    #echo "label: $label"
-    catalog="$(metaflac --show-tag=CATALOGNUMBER "$file" | sed 's/^CATALOGNUMBER=//')"
-    #echo "catalog: $catalog"
-    source="$(metaflac --show-tag=SOURCE "$file" | sed 's/^SOURCE=//')"
-    #echo "source: $source"
-    disc="$(metaflac --show-tag=DISCNUMBER "$file" | sed 's/^DISCNUMBER=//')"
-    #echo "disc: $disc"
-    tdiscs="$(metaflac --show-tag=TOTALDISCS "$file" | sed 's/^TOTALDISCS=//')"
-    #echo "totaldiscs: $tdiscs"
-    discsub="$(metaflac --show-tag=DISCSUBTITLE "$file" | sed 's/^DISCSUBTITLE=//')"
-    #echo "discsub: $discsub"
-    track="$(metaflac --show-tag=TRACKNUMBER "$file" | sed 's/^TRACKNUMBER=//')"
-    #echo "track: $track"
-    ttracks="$(metaflac --show-tag=TOTALTRACKS "$file" | sed 's/^TOTALTRACKS=//')"
-    #echo "tracks: $ttracks"
+    albumartist=$(sanitise "$(metaflac --show-tag=ALBUMARTIST --no-utf8-convert "$file" | sed 's/^ALBUMARTIST=//I')")
+    echo "albumartist: $albumartist"
+    album=$(sanitise "$(metaflac --show-tag=ALBUM --no-utf8-convert "$file" | sed 's/^ALBUM=//I')")
+    echo "album: $album"
+    title=$(sanitise "$(metaflac --show-tag=TITLE --no-utf8-convert "$file" | sed 's/^TITLE=//I')")
+    echo "title: $title"
+    year=$(sanitise "$(metaflac --show-tag=DATE --no-utf8-convert "$file" | sed -e 's/^DATE=//I' -e 's/\([0-9]\{4\}\).*/\1/')")
+    echo "year: $year"
+    oriyear=$(sanitise "$(metaflac --show-tag=ORIGINALDATE --no-utf8-convert "$file" | sed -e 's/^ORIGINALDATE=//I' -e 's/\([0-9]\{4\}\).*/\1/')")
+    echo "oriyear: $oriyear"
+    media=$(sanitise "$(metaflac --show-tag=MEDIA --no-utf8-convert "$file" | sed 's/^MEDIA=//I')")
+    echo "media: $media"
+    label=$(sanitise "$(metaflac --show-tag=LABEL --no-utf8-convert "$file" | sed 's/^LABEL=//I')")
+    if [ -z "$label" ]; then
+        label=$(sanitise "$(metaflac --show-tag=ORGANIZATION --no-utf8-convert "$file" | sed 's/^ORGANIZATION=//I')")
+    fi
+    echo "label: $label"
+    catalog=$(sanitise "$(metaflac --show-tag=CATALOGNUMBER --no-utf8-convert "$file" | sed 's/^CATALOGNUMBER=//I')")
+    echo "catalog: $catalog"
+    source=$(sanitise "$(metaflac --show-tag=SOURCE --no-utf8-convert "$file" | sed 's/^SOURCE=//I')")
+    echo "source: $source"
+    disc=$(sanitise "$(metaflac --show-tag=DISCNUMBER --no-utf8-convert "$file" | sed 's/^DISCNUMBER=//I')")
+    echo "disc: $disc"
+    tdiscs=$(sanitise "$(metaflac --show-tag=TOTALDISCS --no-utf8-convert "$file" | sed 's/^TOTALDISCS=//I')")
+    if [ -z "$tdiscs" ]; then
+        tdiscs=$(sanitise "$(metaflac --show-tag=DISCTOTAL --no-utf8-convert "$file" | sed 's/^DISCTOTAL=//I')")
+    fi
+    echo "tdiscs: $tdiscs"
+    discsub=$(sanitise "$(metaflac --show-tag=DISCSUBTITLE --no-utf8-convert "$file" | sed 's/^DISCSUBTITLE=//I')")
+    echo "discsub: $discsub"
+    track=$(sanitise "$(metaflac --show-tag=TRACKNUMBER --no-utf8-convert "$file" | sed 's/^TRACKNUMBER=//I')")
+    echo "track: $track"
+    ttracks=$(sanitise "$(metaflac --show-tag=TOTALTRACKS --no-utf8-convert "$file" | sed 's/^TOTALTRACKS=//I')")
+    if [ -z "$ttracks" ]; then
+        ttracks=$(sanitise "$(metaflac --show-tag=TRACKTOTAL --no-utf8-convert "$file" | sed 's/^TRACKTOTAL=//I')")
+    fi
+    echo "ttracks: $ttracks"
 fi
 
 
@@ -83,34 +96,34 @@ if ffprobe "$file" 2>&1 | grep -e "Audio: dsd_lsbf_planar"; then
         channels="2"
     fi
     echo $channels
-    albumartist="$(echo "$metadata" | grep "^ \+album_artist \+: " | sed 's/^ \+album_artist \+: //')"
+    albumartist="$(sanitise "$(echo "$metadata" | grep "^ \+album_artist \+: " | sed 's/^ \+album_artist \+: //')")"
     echo "albumartist: $albumartist"
-    album="$(echo "$metadata" | grep "^ \+album \+: " | sed 's/^ \+album \+: //')"
+    album="$(sanitise "$(echo "$metadata" | grep "^ \+album \+: " | sed 's/^ \+album \+: //')")"
     echo "album: $album"
-    title="$(echo "$metadata" | grep "^ \+title \+: " | sed 's/^ \+title \+: //')"
+    title="$(sanitise "$(echo "$metadata" | grep "^ \+title \+: " | sed 's/^ \+title \+: //')")"
     echo "title: $title"
-    year="$(echo "$metadata" | grep "^ \+date \+: " | sed -e 's/^ \+date \+: //' -e 's/\([0-9]\{4\}\).*/\1/')"
+    year="$(sanitise "$(echo "$metadata" | grep "^ \+date \+: " | sed -e 's/^ \+date \+: //' -e 's/\([0-9]\{4\}\).*/\1/')")"
     echo "year: $year"
-    oriyear="$(echo "$metadata" | grep "^ \+originalyear \+: " | sed -e 's/^ \+originalyear \+: //' -e 's/\([0-9]\{4\}\).*/\1/')"
+    oriyear="$(sanitise "$(echo "$metadata" | grep "^ \+originalyear \+: " | sed -e 's/^ \+originalyear \+: //' -e 's/\([0-9]\{4\}\).*/\1/')")"
     echo "oriyear: $oriyear"
-    media="$(echo "$metadata" | grep "^ \+TMED \+: " | sed -e 's/^ \+TMED \+: //' -e 's/ (.*)//')"
+    media="$(sanitise "$(echo "$metadata" | grep "^ \+TMED \+: " | sed -e 's/^ \+TMED \+: //' -e 's/ (.*)//')")"
     echo "media: $media"
-    label="$(echo "$metadata" | grep "^ \+publisher \+: " | sed 's/^ \+publisher \+: //')"
+    label="$(sanitise "$(echo "$metadata" | grep "^ \+publisher \+: " | sed 's/^ \+publisher \+: //')")"
     echo "label: $label"
-    catalog="$(echo "$metadata" | grep "^ \+CATALOGNUMBER \+: " | sed 's/^ \+CATALOGNUMBER \+: //')"
+    catalog="$(sanitise "$(echo "$metadata" | grep "^ \+CATALOGNUMBER \+: " | sed 's/^ \+CATALOGNUMBER \+: //')")"
     echo "catalog: $catalog"
-    source="$(echo "$metadata" | grep -i "^ \+source \+: " | sed 's/^ \+source \+: //I')"
+    source="$(sanitise "$(echo "$metadata" | grep -i "^ \+source \+: " | sed 's/^ \+source \+: //I')")"
     echo "source: $source"
-    disc="$(echo "$metadata" | grep "^ \+disc \+: " | sed 's/^ \+disc \+: \([0-9]\+\)\/.*/\1/')"
+    disc="$(sanitise "$(echo "$metadata" | grep "^ \+disc \+: " | sed 's/^ \+disc \+: \([0-9]\+\)\/.*/\1/')")"
     echo "disc: $disc"
-    tdiscs="$(echo "$metadata" | grep "^ \+disc \+: " | sed 's/^ \+disc \+: [0-9]\+\/\([0-9]\+\).*/\1/')"
+    tdiscs="$(sanitise "$(echo "$metadata" | grep "^ \+disc \+: " | sed 's/^ \+disc \+: [0-9]\+\/\([0-9]\+\).*/\1/')")"
     echo "totaldiscs: $tdiscs"
     #TODO: use correct subtitle tag
-    discsub="$(echo "$metadata" | grep "^ \+subtitle \+: " | sed 's/^ \+subtitle \+: //')"
+    discsub="$(sanitise "$(echo "$metadata" | grep "^ \+subtitle \+: " | sed 's/^ \+subtitle \+: //')")"
     echo "discsub: $discsub"
-    track="$(echo "$metadata" | grep "^ \+track \+: " | sed 's/^ \+track \+: \([0-9]\+\)\/.*/\1/')"
+    track="$(sanitise "$(echo "$metadata" | grep "^ \+track \+: " | sed 's/^ \+track \+: \([0-9]\+\)\/.*/\1/')")"
     echo "disc: $disc"
-    ttracks="$(echo "$metadata" | grep "^ \+track \+: " | sed 's/^ \+track \+: [0-9]\+\/\([0-9]\+\).*/\1/')"
+    ttracks="$(sanitise "$(echo "$metadata" | grep "^ \+track \+: " | sed 's/^ \+track \+: [0-9]\+\/\([0-9]\+\).*/\1/')")"
     echo "tracks: $ttracks"
 fi
 
