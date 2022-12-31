@@ -133,15 +133,15 @@ if [ "$tdiscs" = "1" ]; then
 elif [ "$tdiscs" ]; then
     multidisc="true"
 else
-    echo "no totaldiscs tag found"
+    echo "no totaldiscs tag found, assuming multidisc"
     multidisc="true" # in case the release is multidisc to preserve directories
 fi
 
 # set $printtrack
 if [ "$multidisc" = "true" ]; then
-    printtrack="$disc-$(printf %02d "$track")"
+    printtrack="$disc-$(printf "%02d" "$(echo "$track" | sed 's/^0*//')")"
 else
-    printtrack="$(printf %02d "$track")"
+    printtrack="$(printf "%02d" "$(echo "$track" | sed 's/^0*//')")"
 fi
 
 # set discfolder
@@ -156,6 +156,8 @@ fi
 discdir="$(echo "$discdir" | sed 's/\//-/')""/"
 
 # set filename
+title="$(echo "$title" | sed 's/\//-/g')"
+echo "title: $title"
 filename="$(echo "$printtrack $title.$ext" | sed 's/\//-/')"
 if [ "$channels" = "5.1" ]; then
     filename="[5.1] $filename"
@@ -186,19 +188,28 @@ elif [ "$useyear" = "both" ]; then
     printyear="$oriyear""-""$year"
 fi
 
+# set $printcatalog
+if [ -n "$catalog" ]; then
+    printcatalog=" - ""$catalog"
+fi
+
+# set $printlabelcatalog
+if [ -n "$label$printcatalog" ]; then
+    printlabelcatalog="($label$printcatalog) "
+fi
+
 # set folder
-albumdir="$(echo "($printyear) $album ($label - $catalog) [$media - $source]" | sed 's/\//-/')""/"
+albumdir="$(echo "($printyear) $album $printlabelcatalog[$media - $source]" | sed 's/\//-/')""/"
 
 # set artistfolder
 artistdir="$(echo "$albumartist" | sed 's/\//-/')""/"
 
 # do the move
 parent="$(dirname "$file")"
-mvroot="$HOME/Music/"
+mvroot="$HOME/Music/music/sorted/final/"
 mvdir="$mvroot""$artistdir""$albumdir""$discdir"
 mkdir -p "$mvdir"
 mv -i "$file" "$mvdir""$filename"
-cd "$parent" || exit
-find ./ -maxdepth 1 -regex './.+' | sed -e '/\.flac$/d' -e '/\.mp3$/d' -e '/\.dsf$/d'| xargs -I '{}' mv '{}' "$mvdir"
-cd ..
-find "$parent" -depth -type d -exec rm -d {} \;
+find "$parent" -maxdepth 1 -regex './.+' | sed -e '/\.flac$/d' -e '/\.mp3$/d' -e '/\.dsf$/d'| xargs -I '{}' mv '{}' "$mvdir"
+rmdir "$(realpath "$parent")" --ignore-fail-on-non-empty
+find "$mvdir" -type d -empty -delete
