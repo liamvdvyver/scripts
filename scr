@@ -4,6 +4,7 @@
 scrotdir=~/Pictures/scrot/
 xrandrconf=~/.config/arandr.sh
 
+mkdir -p $scrotdir
 w="$(grep -Poh "(?<=--primary --mode )[0-9]+" $xrandrconf)"
 h="$(grep -Poh "(?<=--primary --mode ($w)x)[0-9]+" $xrandrconf)"
 x="$(grep -Poh "(?<=--primary --mode ($w)x($h) --pos )[0-9]+" $xrandrconf)"
