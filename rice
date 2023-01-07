@@ -154,7 +154,7 @@ fi
 
 # SET VIM COLORSCHEME ------------------------------------------------------ {{{
 
-vimconf=~/.config/nvim/init.vim # set location of MYVIMRC
+vimconf=~/.config/nvim/init.lua # set location of MYVIMRC
 
 # Set $vimtheme and $vimbg from xresources:
 vimtheme="$(xrdb -query | grep '^rice\.nvim\.theme:\s[a-z0-9]\+$' | cut -f 2)"
@@ -163,10 +163,10 @@ vimbg="$(xrdb -query | grep '^rice\.nvim\.background:\s[a-z0-9]\+$' | cut -f 2)"
 # If $vimconf found, replace with $vimtheme and $vimbg (if either set):
 if [ "$vimconf" ]; then
     if [ "$vimbg" ]; then
-        sed -i "s/^\(set background=\)[a-z]\+$/\1$vimbg/" $vimconf
+        sed -i "s/^\(vim.o.background = \)\"[a-z]\+\"$/\1\"$vimbg\"/" $vimconf
     fi
     if [ "$vimtheme" ]; then
-        sed -i "s/^\(colorscheme \)[a-z0-9]\+$/\1$vimtheme/" $vimconf
+        sed -i "s/^\(vim.cmd.colorscheme\)(\"[a-z0-9]\+\")$/\1(\"$vimtheme\")/" $vimconf
         echo "nvim theme: $vimtheme"
     fi
     echo updated "$vimconf"
