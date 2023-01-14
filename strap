@@ -161,13 +161,13 @@ sudo pacman -Sy --noconfirm
 yay -S --noconfirm --norebuild --noredownload --ask 4 \
     xorg-server xorg-xinit xorg-xrandr xorg-xsetroot xorg-xinput xorg-xkill \
     xorg-xev xorg-xwininfo \
-    xclip xwallpaper xdotool xdg-user-dirs \
-    i3-gaps i3lock i3status \
+    xclip xwallpaper xdotool xdg-user-dirs xdg-ninja-git \
+    i3-wm i3lock i3status \
     dmenu sxhkd flameshot dunst pass network-manager-applet \
     gnome-themes-extra noto-fonts ttf-hack-nerd papirus-icon-theme gruvbox-dark-icons-gtk \
-    picom-tryone-git hsetroot qt5-styleplugins ueberzug \
+    picom hsetroot qt5-styleplugins ueberzug scrot \
     arandr lxappearance \
-    xterm kitty \
+    kitty \
     pulseaudio pulseaudio-alsa lib32-libpulse pavucontrol \
     qutebrowser pdfjs-legacy brave-bin lynx networkmanager \
     pcmanfm mpv sxiv zathura zathura-pdf-mupdf sxiv \
@@ -181,22 +181,22 @@ yay -S --noconfirm --norebuild --noredownload --ask 4 \
     zsh-autosuggestions zsh-sudo-git zsh-syntax-highlighting \
     zsh-you-should-use \
     bash-complete-alias bash-completion \
-    cowsay figlet fortune-mod lolcat neofetch pfetch unimatrix-git \
+    figlet pfetch \
     texlive-most biber \
     ytfzfim yt-dlp \
-    handbrake jellyfin-bin makemkv \
+    jellyfin-bin makemkv \
     cuetools exact-audio-copy ffmpeg foobar2000 losslessaudiochecker mp3info \
     picard puddletag quodlibet sacd-extract \
     nicotine+ qbittorrent \
     android-file-transfer ntfs-3g \
     bridge-utils dnsmasq iptables-nft libvirt qemu-desktop vde2 virt-manager \
     calibre joplin-appimage libreoffice-still zoom \
-    ledger-live-bin monero \
-    nano neovim shellcheck shfmt ctags \
+    ledger-live-bin \
+    neovim shellcheck shfmt ctags \
     cups epson-inkjet-printer-escpr \
     darktable gimp \
     nodejs npm yarn \
-    barrier calibre smartmontools wine-mono jdownloader2 discord unrar
+    calibre smartmontools wine-mono jdownloader2 unrar
 
 pip install rtv pynvim
 
