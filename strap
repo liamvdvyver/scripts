@@ -260,7 +260,7 @@ echo "$ssh_password" > "$ssh_pass"
 echo "$gpg_password" | gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 -r "$gpg_email" -e "$ssh_pass"
 rm "$ssh_pass"
 git add "$ssh_pass"".gpg"
-git commit -m "Add given password for $ssh_pass to store.:"
+git commit -m "Add given password for $ssh_pass to store."
 
 # }}}
 
