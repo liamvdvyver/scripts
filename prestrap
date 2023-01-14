@@ -8,13 +8,13 @@ else
 fi
 
 mkdir -p "$outdir"/gpg
-mkdir -p "$outdir"/.ssh
+mkdir -p "$outdir"/ssh
 
 gpg --export-secret-keys --armor --output "$outdir"/gpg/key.asc
 gpg --export-ownertrust >"$outdir"/gpg/ownertrust.txt
 
-cp ~/.ssh/strap_rsa.pub "$outdir"/.ssh
-cp ~/.ssh/strap_rsa "$outdir"/.ssh
+cp ~/.ssh/strap_rsa.pub "$outdir"/ssh
+cp ~/.ssh/strap_rsa "$outdir"/ssh
 
 cd ~/git/scripts/ || exit
 git pull
