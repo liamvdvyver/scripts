@@ -201,7 +201,7 @@ yay -S --noconfirm --norebuild --noredownload --ask 4 \
 pip install rtv pynvim
 
 mkdir -p ~/.local/lib/R
-Rscript -e "install.packages(c('languageserver', 'stringi', 'pacman'))"
+Rscript -e "install.packages(c('pacman'))"
 
 # }}}
 
@@ -216,7 +216,11 @@ ranger --copy-config=scope
 git clone https://github.com/alexanderjeurissen/ranger_devicons ~/.config/ranger/plugins/ranger_devicons
 
 # Neovim
-nvim --headless +PlugInstall +qa
+nvim --headless -c 'autocmd User PackerComplete quitall'
+nvim --headless -c 'PackerSync' -c 'q!'
+rm ~/.Rprofile
+nvim --headless -c 'MasonInstall r-languageserver' -c 'q!'
+yadm restore ~/.Rprofile
 
 # NetworkManager
 sudo systemctl enable NetworkManager
