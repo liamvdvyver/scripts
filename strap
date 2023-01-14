@@ -126,9 +126,10 @@ mkdir -p ~/.local/share/gnupg
 export GNUPGHOME=~/.local/share/gnupg/
 export GPG_AGENT_INFO=""
 
-find . -name '*.key' -exec sh -c "echo "$gpg_password" | gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 --allow-secret-key-import --import {}" \;
-find . -name '*.asc' -exec sh -c "echo "$gpg_password" | gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 --allow-secret-key-import --import {}" \; find . -name 'pubring.kbx' -exec sh -c "echo "$gpg_password" | gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 --import {}" \;
-find . -name '*ownertrust.txt' -exec sh -c "echo "$gpg_password" | gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 --import-ownertrust {}" \;
+find . -name '*.key' -exec sh -c "echo ""$gpg_password"" | gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 --allow-secret-key-import --import {}" \;
+find . -name '*.asc' -exec sh -c "echo ""$gpg_password"" | gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 --allow-secret-key-import --import {}" \;
+find . -name 'pubring.kbx' -exec sh -c "echo ""$gpg_password"" | gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 --import {}" \;
+find . -name '*ownertrust.txt' -exec sh -c "echo ""$gpg_password"" | gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 --import-ownertrust {}" \;
 
 # }}}
 
