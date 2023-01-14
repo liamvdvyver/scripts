@@ -271,7 +271,7 @@ rm ~/.bash_history
 rm ~/pacman.conf.bak
 rm ~/libvirtd.conf.bak
 rm ~/qemu.conf.bak
-rm -r ~/ gpg
+rm -r ~/gpg
 rm ~/strap
 
 echo "Bootstrap completed."
