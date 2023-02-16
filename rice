@@ -399,4 +399,11 @@ if [ "$(pgrep nm-applet)" ]; then
     echo "restarted nm-applet"
 fi
 
+# Restart blueman-applet
+if [ "$(pgrep blueman-applet)" ]; then
+    pkill -f blueman-applet
+    nohup blueman-applet > /dev/null 2>&1 &
+    echo "restarted blueman-applet"
+fi
+
 # }}}
