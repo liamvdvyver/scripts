@@ -190,6 +190,23 @@ fi
 
 # }}}
 
+# SET DOOM EMACS COLORSCHEME ----------------------------------------------- {{{
+
+doomconf=~/.config/doom/config.el # Set doom config location
+doomtheme="$(xrdb -query | grep '^rice\.doom\.theme:\s[-a-z0-9]\+$' | cut -f 2)" ||
+
+# Defaults if undefined
+if ! [ "$doomtheme" ]; then
+    if [ "$bg" = "light" ]; then
+        doomtheme="doom-gruvbox"
+    elif [ "$bg" = "light" ]; then
+        doomtheme="doom-gruvbox-light"
+    fi
+fi
+
+if [ "$doomconf" ]; then
+    sed -i "s/^\((setq doom-theme '\)[-a-z0-9]\+)$/\1$doomtheme)/" $doomconf && \
+    echo "DOOM emacs theme: $doomtheme"
 fi
 
 # }}}
@@ -343,6 +360,10 @@ if [ "$nvim_socks" ]; then
     fi
 fi
 
+# Send emacs server new theme if running
+if [ "$(pgrep emacs)" ] && [ "$doomtheme" ]; then
+    emacsclient -e "(load-theme '$doomtheme t)" && \
+    echo "reloaded emacs"
 fi
 
 # Find zathura instances and source config with dbus:
