@@ -6,7 +6,7 @@ if [[ $# -eq 1 ]]; then
 else
     dirs=$(find ~/git -mindepth 1 -maxdepth 1 -type d)
     sessions=$(tmux list-sessions | cut -d : -f 1)
-    custom=$(echo "$HOME/Documents/pkb ncspot scratchpad yadm" | tr ' ' '\n')
+    custom=$(echo "$HOME/Documents/pkb ncspot scratchpad yadm school" | tr ' ' '\n')
     list=$(echo "$dirs" && echo "$custom" && echo "$sessions")
     selected=$(echo "$list" | sort | uniq | fzf)
 fi
@@ -23,7 +23,7 @@ if [[ $selected_name = 'pkb' ]]; then
 elif [[ $selected_name = 'ncspot' ]]; then
     selected=~
     command="ncspot"
-elif [[ $selected_name = 'scratchpad' ]]; then
+elif [[ $selected_name = 'scratchpad' ]] || [[ $selected_name = 'school' ]]; then
     selected=~
     command=""
 elif [[ $selected_name = 'yadm' ]]; then
