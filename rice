@@ -154,8 +154,8 @@ fi
 
 # SET VIM COLORSCHEME ------------------------------------------------------ {{{
 
-vimconf=~/.config/nvim/init.lua         # set location of MYVIMRC
-vimplug=~/.config/nvim/lua/plugins.lua  #                 lua plugin config
+vimconf=~/.config/nvim/init.lua                      # set location of MYVIMRC
+vimplug=~/.config/nvim/lua/plg/plugins/lualine.lua  # lua plugin config
 
 # Set $vimtheme and $vimbg from xresources:
 vimtheme="$(xrdb -query | grep '^rice\.nvim\.theme:\s[a-z0-9]\+$' | cut -f 2)"
@@ -350,12 +350,11 @@ fi
 
 # Find nvim server sockets and remote send command to reload config:
 nvim_socks="$(find /run/ -regex "/run/user/1000/nvim\.[a-zA-Z0-9]+\.0" -print 2>/dev/null | paste -s -d ' ')"
-if [ "$nvim_socks" ]; then
-    echo "$nvim_socks" | xargs -r -n 1 nvim --remote-send "<esc>:source \$MYVIMRC<CR>" --server && \
-    echo "reloaded nvim" && \
-    if [ "$vimplug" ]; then
-        echo "$nvim_socks" | xargs -r -n 1 nvim --remote-send ":source $vimplug<CR>" --server && \
-        echo "$nvim_socks" | xargs -r -n 1 nvim --remote-send ":PackerCompile<CR>" --server && \
+if [ -n "$(pgrep nvim)" ]; then
+    echo "$nvim_socks" | xargs -r -n 1 nvim --remote-send "<esc>:source \$MYVIMRC<CR><CR>" --server && \
+    echo "reloaded nvim"
+    if [ "$lualinetheme" ]; then
+        echo "$nvim_socks" | xargs -r -n 1 nvim --remote-send "<esc>:lua require('lualine').setup({options = {theme = '$lualinetheme'}})<CR><CR>" --server && \
         echo "reloaded nvim plugins"
     fi
 fi
