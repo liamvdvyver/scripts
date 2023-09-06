@@ -6,7 +6,7 @@ if [[ $# -eq 1 ]]; then
 else
     dirs=$(find ~/git -mindepth 1 -maxdepth 1 -type d)
     sessions=$(tmux list-sessions | cut -d : -f 1)
-    custom=$(echo "$HOME/Documents/pkb ncspot scratchpad yadm school" | tr ' ' '\n')
+    custom=$(echo "$HOME/Documents/pkb ncspot scratchpad yadm school emacs" | tr ' ' '\n')
     list=$(echo "$dirs" && echo "$custom" && echo "$sessions")
     selected=$(echo "$list" | sort | uniq | fzf)
 fi
@@ -29,6 +29,11 @@ elif [[ $selected_name = 'scratchpad' ]] || [[ $selected_name = 'school' ]]; the
 elif [[ $selected_name = 'yadm' ]]; then
     selected=~
     command="yadm enter nvim"
+elif [[ $selected_name = "emacs" ]]; then
+    selected=~
+    command='emacsclient -c -a emacs -nw'
+elif [[ $selected_name = 'Macro-Financial-Econometrics' ]]; then
+    command=""
 fi
 tmux_running=$(pgrep tmux)
 
