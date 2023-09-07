@@ -16,7 +16,7 @@ calibredb list \
         --layout=reverse --multi --height=50% --min-height=20 --border \
         --ansi --color='header:italic:underline' \
         --preview-window='right,50%,border-left' \
-        --prompt="📖 Calibre> " \
+        --prompt="Calibre> " \
         -d\\ \
         --with-nth=3 \
         --preview 'calibredb show_metadata {1}' |
