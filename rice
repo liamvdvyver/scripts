@@ -257,6 +257,29 @@ fi
 
 # }}}
 
+# SET ROFI COLOURS --------------------------------------------------------- {{{
+
+roficonf=~/.config/rofi/theme.rasi # set dunst config location
+
+# Set $dunstXX from Xresources database:
+rofibg=$(xrdb -query | grep '^\*background:\s#[a-zA-Z0-9]\{6\}$' | cut -f 2)
+rofifg=$(xrdb -query | grep '^\*foreground:\s#[a-zA-Z0-9]\{6\}$' | cut -f 2)
+rofifl=$(xrdb -query | grep '^rice\.foreground\.alt:\s#[a-zA-Z0-9]\{6\}$' | cut -f 2)
+rofibd=$(xrdb -query | grep '^rice\.border\.focused:\s#[a-zA-Z0-9]\{6\}$' | cut -f 2)
+rofiba=$(xrdb -query | grep '^rice\.background\.focused:\s#[a-zA-Z0-9]\{6\}$' | cut -f 2)
+rofifa=$(xrdb -query | grep '^rice\.foreground\.focused:\s#[a-zA-Z0-9]\{6\}$' | cut -f 2)
+
+if [ -f "$roficonf" ]; then
+    sed -i "s/\(\W\+[a-z\-]\+: \)\#[a-zA-Z0-9]\{6\}\(; \/\/fg\)/\1$rofifg\2/" "$roficonf"
+    sed -i "s/\(\W\+[a-z\-]\+: \)\#[a-zA-Z0-9]\{6\}\(; \/\/bg\)/\1$rofibg\2/" "$roficonf"
+    sed -i "s/\(\W\+[a-z\-]\+: \)\#[a-zA-Z0-9]\{6\}\(; \/\/fl\)/\1$rofifl\2/" "$roficonf"
+    sed -i "s/\(\W\+[a-z\-]\+: \)\#[a-zA-Z0-9]\{6\}\(; \/\/fa\)/\1$rofifa\2/" "$roficonf"
+    sed -i "s/\(\W\+[a-z\-]\+: \)\#[a-zA-Z0-9]\{6\}\(; \/\/ba\)/\1$rofiba\2/" "$roficonf"
+    sed -i "s/\(\W\+[a-z\-]\+: \)\#[a-zA-Z0-9]\{6\}\(; \/\/bd\)/\1$rofibd\2/" "$roficonf"
+fi
+
+# }}}
+
 # SET DUNST COLOURS -------------------------------------------------------- {{{
 
 dunstconf=~/.config/dunst/dunstrc # set dunst config location
