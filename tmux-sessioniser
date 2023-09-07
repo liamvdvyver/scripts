@@ -1,13 +1,17 @@
 #!/usr/bin/env bash
 # taken from github.com/ThePrimeagen/.dotfiles
+# adapted to work with tmuxifier for custom layouts
+
+default_command="tmuxifier load-window dev"
+project_dir="$HOME/git/"
 
 if [[ $# -eq 1 ]]; then
     selected=$1
 else
-    dirs=$(find ~/git -mindepth 1 -maxdepth 1 -type d)
+    dirs=$(find "$project_dir" -mindepth 1 -maxdepth 1 -type d -exec basename {} \;)
     sessions=$(tmux list-sessions | cut -d : -f 1)
-    custom=$(echo "$HOME/Documents/pkb ncspot scratchpad yadm school emacs" | tr ' ' '\n')
-    list=$(echo "$dirs" && echo "$custom" && echo "$sessions")
+    tmuxifiers=$(tmuxifier list-sessions)
+    list=$(echo "$dirs" &&  echo "$sessions" && echo "$tmuxifiers")
     selected=$(echo "$list" | sort | uniq | fzf)
 fi
 
@@ -15,35 +19,32 @@ if [[ -z $selected ]]; then
     exit 0
 fi
 
-command="nvim"
-selected_name=$(basename "$selected" | tr . _)
-if [[ $selected_name = 'pkb' ]]; then
-    selected_name="pkb"
-    command="nvim index.md"
-elif [[ $selected_name = 'ncspot' ]]; then
-    selected=~
-    command="ncspot"
-elif [[ $selected_name = 'scratchpad' ]] || [[ $selected_name = 'school' ]]; then
-    selected=~
-    command=""
-elif [[ $selected_name = 'yadm' ]]; then
-    selected=~
-    command="yadm enter nvim"
-elif [[ $selected_name = "emacs" ]]; then
-    selected=~
-    command='emacsclient -c -a emacs -nw'
-elif [[ $selected_name = 'Macro-Financial-Econometrics' ]]; then
-    command=""
-fi
+selected_name=$(echo "$selected" | tr . _)
 tmux_running=$(pgrep tmux)
 
-if [[ -z $TMUX ]] && [[ -z $tmux_running ]]; then
-    tmux new-session -s $selected_name -c "$selected" $command
-    exit 0
+if [[ -n $TMUX ]] || [[ -n $tmux_running ]]; then
+
+    if tmux has-session -t="$selected_name" 2> /dev/null; then
+        :
+
+    elif tmuxifier list-sessions | grep -q "$selected"; then
+        tmuxifier load-session "$selected"
+
+    else
+        target_dir="$project_dir""$selected"
+        tmux new-session -ds "$selected_name" -c "$target_dir" "$default_command"
+
+    fi
+else
+
+    if tmuxifier list-sessions | grep -q "$selected"; then
+        tmuxifier load-session "$selected"
+
+    else
+        target_dir="$project_dir""$selected"
+        tmux new-session -s "$selected_name" -c "$target_dir" "$default_command"
+
+    fi
 fi
 
-if ! tmux has-session -t=$selected_name 2> /dev/null; then
-    tmux new-session -ds $selected_name -c "$selected" $command
-fi
-
-tmux switch-client -t $selected_name 2> /dev/null || tmux at -t $selected_name
+tmux switch-client -t "$selected_name" 2> /dev/null || tmux at -t "$selected_name"
