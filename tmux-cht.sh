@@ -25,16 +25,16 @@ else
     langfile=~/.config/tmux/.tmux-cht-languages
     cmdfile=~/.config/tmux/.tmux-cht-commands
 
-    selected=`cat $langfile $cmdfile | fzf`
+    selected=$(cat $langfile $cmdfile | fzf)
     if [[ -z $selected ]]; then
         exit 0
     fi
 
     read -p "Enter Query: " query
-    query=`echo $query | tr ' ' '+'`
+    query=$(echo "$query" | tr ' ' '+' | sed 's/\([()]\)/\\\1/g')
 
     if grep -qs "$selected" "$langfile"; then
-        command="curl -s cht.sh\/$selected\/$query | less -R"
+        command='curl -s cht.sh\/'"$selected\/$query"' | less -R'
     else
         command="curl -s cht.sh\/$selected~$query | less -R"
     fi
