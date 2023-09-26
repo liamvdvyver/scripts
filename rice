@@ -180,10 +180,10 @@ fi
 
 if [ "$vimplug" ]; then
     if [ "$lualinetheme" ]; then
-        sed -i "s/^\(\s\+theme = \)'[-_a-z0-9]\+',$/\1'$lualinetheme',/" $vimplug && \
+        sed -i 's/^\(\s\+theme = \)\"[-_a-z0-9]\+\",$/\1\"'"$lualinetheme"'\",/' $vimplug && \
         echo "lualine theme: $lualinetheme"
     else
-        sed -i "s/^\(\s\+theme = \)'[-_a-z0-9]\+',$/\1'auto',/" $vimplug && \
+        sed -i 's/^\(\s\+theme = \)\"[-_a-z0-9]\+\",$/\1\"auto\",/' $vimplug && \
         echo "lualine theme: default"
     fi
 fi
