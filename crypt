@@ -3,20 +3,59 @@
 
 gitdir=~/git/dotfiles-secret
 yadmdir=~/.local/share/yadm
-usage="usage: crypt [--decrypt] [--encrypt]"
+usage="usage: crypt [--decrypt/--encrypt] [passphrase]"
 
-if [ "$1" = "-e" ] || [ "$1" = "--encrypt" ]; then
+while [ -n "$1" ]; do
+    case "$1" in
+    "-d")
+        mode="decrypt"
+        ;;
+    "--decrypt")
+        mode="decrypt"
+        ;;
+    "-e")
+        mode="encrypt"
+        ;;
+    "--encrypt")
+        mode="encrypt"
+        ;;
+    "--passphrase")
+        shift
+        passphrase="$1"
+        ;;
+    "-p")
+        shift
+        passphrase="$1"
+        ;;
+    "--git-dir")
+        shift
+        gitdir="$1"
+        ;;
+    "--yadm-dir")
+        shift
+        yadmdir="$1"
+        ;;
+    esac
+    shift
+done
+
+if [ "$mode" = "encrypt" ]; then
     yadm encrypt
-    cp $yadmdir/archive $gitdir || exit
-    cd $gitdir || exit
+    cp "$yadmdir/archive" "$gitdir" || exit
+    cd "$gitdir" || exit
     git add archive
     git commit -am "chore: encrypt files"
     git push
-elif [ "$1" = "-d" ] || [ "$1" = "--decrypt" ]; then
-    cd $gitdir || exit
+elif [ "$mode" = "decrypt" ]; then
+    cd "$gitdir" || exit
     git pull
-    cp archive $yadmdir || exit
-    yadm decrypt
+    if [ -n "$passphrase" ]; then
+        cd "$HOME" || exit
+        echo "$passphrase" | gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 -d "$gitdir/archive" | tar xvf -
+    else
+        cp archive "$yadmdir" || exit
+        yadm decrypt
+    fi
 else
     echo "$usage"
     exit
