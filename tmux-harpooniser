@@ -1,41 +1,111 @@
 #!/bin/sh
 
+# if not running in tmux, do nothing
+if [ -z "$TMUX" ]; then
+    exit 1
+fi
+
 usage="tmux-harpooniser [ -n number ] [ -a name ] [ -e ]"
-filename=~/.local/share/tmux-harpooniser/sessions
+dirname=~/.local/share/tmux-harpooniser
+create_string="CREATE NEW"
 
 while [ -n "$1" ]; do
     case "$1" in
-    "-s")
+    "switch")
+        switch="true"
+        shift
+        ;;
+    "append")
+        append="true"
+        shift
+        ;;
+    "edit")
+        edit="true"
+        shift
+        ;;
+    "-m")
+        shift
+        meta_session=$1
+        shift
+        ;;
+    "-d")
+        shift
+        dirname=$1
+        shift
+        ;;
+    "-n")
         shift
         session_number=$1
         shift
         ;;
-    "-a")
+    "-s")
         shift
-        append_name=$1
-        shift
-        ;;
-    "-e")
-        edit="true"
-        shift
-        ;;
-    "-f")
-        shift
-        filename=$1
-        shift
-        ;;
-    "-p")
-        print="true"
+        session_name=$1
         shift
         ;;
     esac
 done
 
-if [ -n "$print" ]; then
-    cat "$filename"
+# Ensure dirname exists
+mkdir "$dirname" 2>/dev/null
+
+cur_session=$(tmux display-message -p '#S')
+
+# If appending
+if [ "$append" = "true" ]; then
+
+    # Prompt to see which meta-session to add the session to
+    if [ -n "$meta_session" ]; then
+        selection="$meta_session"
+    else
+        metasession_list=$(find "$dirname" -type f -exec basename {} \; && echo "$create_string")
+        selection=$(echo "$metasession_list" | fzf)
+        if [ "$selection" = "CREATE NEW" ]; then
+            printf "Enter name of meta-session: "
+            read -r selection
+        fi
+    fi
+
+    # FIX: Use $create_str instead of hardcoding
+    if [ -z "$selection" ]; then exit 0; fi
+
+    # Special case: no -s
+    if [ -z "$session_name" ]; then
+        append_name=$cur_session
+    fi
+
+    # Do the appending
+    filename="$dirname/$selection"
+    if grep -q "$append_name" "$filename" 2>/dev/null; then
+        exit 0
+    else
+        mkdir "$(dirname "$filename")" 2>/dev/null
+        echo "$append_name" >>"$filename"
+    fi
+    exit 0
 fi
 
-if [ -n "$session_number" ]; then
+# For editing or switching to session,
+# assume current session is in a meta-session.
+# First, find the corresponding file
+
+if [ -n "$meta_session" ]; then
+    filename="$dirname/$meta_session"
+else
+    filename=$(rg -l "$cur_session" "$dirname")
+    if [ -z "$filename" ]; then # If session not found
+        exit 0
+    elif ! [ "$(echo "$filename" | wc -l)" = 1 ]; then # If multiple matches
+        echo "Multiple matches found in $dirname"
+        exit 1
+    fi
+fi
+
+# If switching to session number
+if [ "$switch" = "true" ]; then
+    if [ -z "$session_number" ]; then
+        echo "Argument -s required for switch"
+    fi
     session_name=$(sed -n "$session_number"p "$filename") || exit 0
     if [ -z "$session_name" ]; then exit 0; fi
     # TODO: handle running outside of tmux?
@@ -47,21 +117,12 @@ if [ -n "$session_number" ]; then
     fi
 fi
 
-if [ -n "$append_name" ]; then
-
-    if [ "$append_name" = "-c" ]; then
-        append_name=$(tmux display-message -p '#S')
-    fi
-
-    # TODO: Handle file not available
-    if grep -q "$append_name" "$filename"; then
-        exit 0
-    else
-        mkdir "$(dirname "$filename")" 2>/dev/null
-        echo "$append_name" >>"$filename"
-    fi
-fi
-
+# If editing
 if [ -n "$edit" ]; then
-    tmux display-popup -E "$VISUAL $filename"
+    $VISUAL "$filename"
+
+    # Clean up if file is empty
+    if ! [ -s "$filename" ]; then
+        rm "$filename"
+    fi
 fi
