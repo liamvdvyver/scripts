@@ -5,45 +5,43 @@ if [ -z "$TMUX" ]; then
     exit 1
 fi
 
-usage="tmux-harpooniser [ -n number ] [ -a name ] [ -e ]"
+usage="Usage: tmux-harpooniser [switch / append / edit / help ] [ -l | --line-number ] [ -m | --meta-session ] [ -s | --session-name ]"
 dirname=~/.local/share/tmux-harpooniser
 create_string="CREATE NEW"
 
 while [ -n "$1" ]; do
-    case "$1" in
-    "switch")
+    if echo "$1" | grep -q "^help$"; then
+        echo "$usage"
+        exit 0
+    elif echo "$1" | grep -q "^switch$"; then
         switch="true"
         shift
-        ;;
-    "append")
+    elif echo "$1" | grep -q "^append$"; then
         append="true"
         shift
-        ;;
-    "edit")
+    elif echo "$1" | grep -q "^edit$"; then
         edit="true"
         shift
-        ;;
-    "-m")
+    elif echo "$1" | grep -q "\(^--meta-session$\|^-m$\)"; then
         shift
         meta_session=$1
         shift
-        ;;
-    "-d")
+    elif echo "$1" | grep -q "\(^--dirname$\|^-d$\)"; then
         shift
         dirname=$1
         shift
-        ;;
-    "-n")
+    elif echo "$1" | grep -q "\(^--line-number$\|^-l$\)"; then
         shift
         session_number=$1
         shift
-        ;;
-    "-s")
+    elif echo "$1" | grep -q "\(^--session-name$\|^-s$\)"; then
         shift
         session_name=$1
         shift
-        ;;
-    esac
+    else
+        echo "$usage"
+        exit 1
+fi
 done
 
 # Ensure dirname exists
@@ -104,7 +102,7 @@ fi
 # If switching to session number
 if [ "$switch" = "true" ]; then
     if [ -z "$session_number" ]; then
-        echo "Argument -s required for switch"
+        echo "Argument -l required for switch"
     fi
     session_name=$(sed -n "$session_number"p "$filename") || exit 0
     if [ -z "$session_name" ]; then exit 0; fi
