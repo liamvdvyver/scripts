@@ -1,0 +1,67 @@
+#!/bin/sh
+
+usage="tmux-harpooniser [ -n number ] [ -a name ] [ -e ]"
+filename=~/.local/share/tmux-harpooniser/sessions
+
+while [ -n "$1" ]; do
+    case "$1" in
+    "-s")
+        shift
+        session_number=$1
+        shift
+        ;;
+    "-a")
+        shift
+        append_name=$1
+        shift
+        ;;
+    "-e")
+        edit="true"
+        shift
+        ;;
+    "-f")
+        shift
+        filename=$1
+        shift
+        ;;
+    "-p")
+        print="true"
+        shift
+        ;;
+    esac
+done
+
+if [ -n "$print" ]; then
+    cat "$filename"
+fi
+
+if [ -n "$session_number" ]; then
+    session_name=$(sed -n "$session_number"p "$filename") || exit 0
+    if [ -z "$session_name" ]; then exit 0; fi
+    # TODO: handle running outside of tmux?
+    # Maybe just exit 1
+    if tmux has-session -t "$session_name"; then
+        tmux switch-client -t "$session_name"
+    else
+        tmux-sessioniser "$session_name" # FIX: Doesn't take commandline args well
+    fi
+fi
+
+if [ -n "$append_name" ]; then
+
+    if [ "$append_name" = "-c" ]; then
+        append_name=$(tmux display-message -p '#S')
+    fi
+
+    # TODO: Handle file not available
+    if grep -q "$append_name" "$filename"; then
+        exit 0
+    else
+        mkdir "$(dirname "$filename")" 2>/dev/null
+        echo "$append_name" >>"$filename"
+    fi
+fi
+
+if [ -n "$edit" ]; then
+    tmux display-popup -E "$VISUAL $filename"
+fi
