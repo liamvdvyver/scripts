@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # taken from github.com/ThePrimeagen/.dotfiles
-# adapted to provide man or tldr results
+# adapted to provide man, tldr or hoogle results
 
 usage="Usage: tmux-cht.sh [tldr] [cht.sh] [man]"
 
 if [[ -n "$1" ]]; then
     mode="$1"
 else
-    mode_options=$(echo "tldr" && echo "cht.sh" && echo man)
+    mode_options=$(echo "tldr" && echo "cht.sh" && echo "hoogle" && echo man)
     mode=$(echo "$mode_options" | fzf)
 fi
 
@@ -47,6 +47,20 @@ elif [[ "$mode" == "cht.sh" ]]; then
     else
         command="curl -s cht.sh\/$selected~$query | less -R"
     fi
+
+elif [[ "$mode" == "hoogle" ]]; then
+
+    read -p "Enter Query: " query
+    if [[ -z $query ]]; then
+        exit 0
+    fi
+    selected=$(hoogle "$query" --count=1000 | fzf | cut -f 2- -d ' ')
+    if [[ -z $selected ]]; then
+        exit 0
+    fi
+
+    command='hoogle "'"$selected"'" --info --colour | less -R'
+
 else
     echo "$usage"
     exit 1
