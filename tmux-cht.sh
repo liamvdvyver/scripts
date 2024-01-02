@@ -2,7 +2,16 @@
 # taken from github.com/ThePrimeagen/.dotfiles
 # adapted to provide man or tldr results
 
-if [[ $1 == "man" ]]; then
+usage="Usage: tmux-cht.sh [tldr] [cht.sh] [man]"
+
+if [[ -n "$1" ]]; then
+    mode="$1"
+else
+    mode_options=$(echo "tldr" && echo "cht.sh" && echo man)
+    mode=$(echo "$mode_options" | fzf)
+fi
+
+if [[ "$mode" == man ]]; then
 
     selected="$(man -k "" | cut -f 1 -d ' ' | fzf)"
     if [[ -z $selected ]]; then
@@ -11,7 +20,7 @@ if [[ $1 == "man" ]]; then
 
     command="man $selected"
 
-elif [[ $1 == "tldr" ]]; then
+elif [[ "$mode" == "tldr" ]]; then
 
     read -p "Enter Command: " selected
     if [[ -z $selected ]]; then
@@ -20,7 +29,7 @@ elif [[ $1 == "tldr" ]]; then
 
     command="tldr $selected | less"
 
-else
+elif [[ "$mode" == "cht.sh" ]]; then
 
     langfile=~/.config/tmux/.tmux-cht-languages
     cmdfile=~/.config/tmux/.tmux-cht-commands
@@ -38,7 +47,9 @@ else
     else
         command="curl -s cht.sh\/$selected~$query | less -R"
     fi
-
+else
+    echo "$usage"
+    exit 1
 fi
 
 if [[ -n $TMUX ]]; then
