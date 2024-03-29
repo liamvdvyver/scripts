@@ -1,0 +1,34 @@
+#!/bin/sh
+
+selected="$(printf 'light\ndark\ntoggle\nsolid\nwallpaper\nselect wallpaper\nselect theme' | dmenu)"
+
+case $selected in
+    "")
+        exit 0
+        ;;
+    "light")
+        rice --light
+        ;;
+    "dark")
+        rice --dark
+        ;;
+    "toggle")
+        rice --toggle
+        ;;
+    "solid")
+        pape --solid
+        ;;
+    "wallpaper")
+        pape --riced
+        ;;
+    "select wallpaper")
+        $TERMINAL --name __scratchpad -e pape -i ~/Pictures/papes/
+        ;;
+    "select theme")
+        rice "$(rice --list | dmenu)"
+        ;;
+    *)
+        echo "No match"
+        exit 1
+        ;;
+esac

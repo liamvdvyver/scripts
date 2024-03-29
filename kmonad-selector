@@ -1,0 +1,13 @@
+#!/bin/bash
+
+KBD_DEV=$(find /dev/input/by-path/*kbd* | rofi -dmenu)
+
+if [ -z "$KBD_DEV" ]; then
+    exit 0
+fi
+
+killall kmonad
+export KBD_DEV
+KBDCFG=$(envsubst < ~/.config/kmonad/default.kbd)
+
+kmonad <(echo "$KBDCFG")

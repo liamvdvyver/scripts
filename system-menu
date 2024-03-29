@@ -1,0 +1,28 @@
+#!/bin/sh
+
+selected="$(printf 'suspend\nlock\nexit\nshut down\nreboot' | dmenu)"
+
+case $selected in
+    "")
+        exit 0
+        ;;
+    "lock")
+        i3lock -c 000000
+        ;;
+    "suspend")
+        i3lock -c 000000 && systemctl suspend
+        ;;
+    "shut down")
+        shutdown now
+        ;;
+    "exit")
+        i3 exit
+        ;;
+    "reboot")
+        reboot
+        ;;
+    *)
+        echo "No match"
+        exit 1
+        ;;
+esac

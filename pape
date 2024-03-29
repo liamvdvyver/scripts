@@ -3,8 +3,8 @@
 
 usage="usage: pape <file> [--interactive]"
 papeconf=~/.config/rice/pape
-xrandrconf=~/.config/arandr.sh
-display="$(grep -Po "[A-Z0-9\-]+(?= --primary)" $xrandrconf)"
+# xrandrconf=~/.config/arandr.sh
+# display="$(grep -Po "[A-Z0-9\-]+(?= --primary)" $xrandrconf)"
 
 if [ "$2" ]; then
     papedir="$2"
@@ -14,6 +14,11 @@ fi
 
 if [ "$1" = "--interactive" ] || [ "$1" = "-i" ]; then
     prompt="1"
+elif [ "$1" = "--solid" ] || [ "$1" = "-s" ]; then
+    hsetroot -solid "$(xrdb -query | grep '^\*background' | cut -f 2)"
+    exit
+elif [ "$1" = "--riced" ] || [ "$1" = "-r" ]; then
+    pape="$(cat $XDG_CONFIG_HOME/rice/pape)"
 elif [ "$1" ]; then
     pape="$1"
 else
@@ -22,7 +27,9 @@ else
 fi
 
 if [ "$prompt" = "1" ]; then
-    if [ -f "$(which fzf-ueberzogen.sh)" ]; then
+    if [ -f "$(which fzfimg.sh)" ]; then
+        pape="$(find "$papedir" -type f | sed '/\.gif$/d' | fzfimg.sh | xargs readlink -f)"
+    elif [ -f "$(which fzf-ueberzogen.sh)" ]; then
         pape="$(find "$papedir" -type f | sed '/\.gif$/d' | fzf-ueberzogen.sh | xargs readlink -f)"
     else
         pape="$(find "$papedir" -type f | sed '/\.gif$/d' | fzf | xargs readlink -f)"
@@ -30,8 +37,9 @@ if [ "$prompt" = "1" ]; then
 fi
 
 if [ -f "$pape" ]; then
-    xwallpaper --no-randr --zoom "$pape"
-    xwallpaper --output "$display" --zoom "$pape"
+    # xwallpaper --no-randr --zoom "$pape"
+    # xwallpaper --output "$display" --zoom "$pape"
+    xwallpaper --zoom "$pape"
     echo "$pape" > $papeconf
 else
     echo "$pape not found"

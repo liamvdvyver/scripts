@@ -1,0 +1,18 @@
+#!/bin/sh
+
+quickmarks=$(cat "$HOME/.config/qutebrowser/quickmarks")
+search_prefix="www.duckduckgo.com/&q="
+
+selection="$(echo "$quickmarks" | dmenu)"
+
+if [ -z "$selection" ]; then
+    exit 0
+fi
+
+if [ -n "$(echo "$quickmarks" | grep "$selection")" ]; then
+    site=$(echo "$selection" | cut -f 2 -d ' ')
+else
+    site="$search_prefix$selection"
+fi
+
+xdg-open "https://$site"
