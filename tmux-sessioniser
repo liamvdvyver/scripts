@@ -4,14 +4,16 @@
 
 default_command="tmuxifier load-window dev"
 project_dir="$HOME/git/"
+school_subdir="school"
 
 if [[ $# -eq 1 ]]; then
     selected=$1
 else
-    dirs=$(find "$project_dir" -mindepth 1 -maxdepth 1 -type d -exec basename {} \;)
+    dirs=$(find "$project_dir" -mindepth 1 -maxdepth 1 -type d -exec basename {} \; | sed "/$school_subdir/d")
+    school_dirs=$(find "$project_dir/$school_subdir" -mindepth 1 -maxdepth 1 -type d -exec basename  {} \; | sed "s/^/$school_subdir\//")
     sessions=$(tmux list-sessions 2>/dev/null | cut -d : -f 1)
     tmuxifiers=$(tmuxifier list-sessions)
-    list=$(echo "$dirs" && echo "$sessions" && echo "$tmuxifiers")
+    list=$(echo "$dirs" && echo "$school_dirs" && echo "$sessions" && echo "$tmuxifiers")
     selected=$(echo "$list" | sort | uniq | fzf)
 fi
 
@@ -27,7 +29,7 @@ if [[ -n $TMUX ]] || [[ -n $tmux_running ]]; then
         :
     elif tmuxifier list-sessions | grep -q "$selected"; then
         tmuxifier load-session "$selected" 2>/dev/null
-        exit 0 # Tmuxifier auto-attaches
+        # exit 0 # Tmuxifier auto-attaches
     else
         target_dir="$project_dir""$selected"
         tmux new-session -ds "$selected_name" -c "$target_dir" "$default_command"
