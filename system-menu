@@ -1,24 +1,30 @@
 #!/bin/sh
 
-selected="$(printf 'suspend\nlock\nexit\nshut down\nreboot' | dmenu)"
+shutdown="󰐥 shut down"
+lock="󰌾 lock"
+reboot="󰜉 reboot"
+exit="󰈆 exit"
+suspend="󰤄 suspend"
+
+selected="$( (echo "$suspend" && echo "$lock" && echo "$exit" && echo "$shutdown" && echo "$reboot") | dmenu)"
 
 case $selected in
     "")
         exit 0
-        ;;
-    "lock")
+       ;;
+    "$lock")
         i3lock -c 000000
         ;;
-    "suspend")
+    "$suspend")
         i3lock -c 000000 && systemctl suspend
         ;;
-    "shut down")
+    "$shutdown")
         shutdown now
         ;;
-    "exit")
+    "$exit")
         i3 exit
         ;;
-    "reboot")
+    "$reboot")
         reboot
         ;;
     *)
