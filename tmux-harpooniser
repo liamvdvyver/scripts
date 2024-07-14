@@ -52,6 +52,12 @@ cur_session=$(tmux display-message -p '#S')
 # If appending
 if [ "$append" = "true" ]; then
 
+    filename=$(rg -l "$cur_session" "$dirname")
+    if [ -n "$filename" ]; then # If session not found
+        echo "Session alredy found in $dirname"
+        exit 1
+    fi
+
     # Prompt to see which meta-session to add the session to
     if [ -n "$meta_session" ]; then
         selection="$meta_session"

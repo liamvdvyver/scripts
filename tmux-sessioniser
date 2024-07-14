@@ -2,37 +2,60 @@
 # taken from github.com/ThePrimeagen/.dotfiles
 # adapted to work with tmuxifier for custom layouts
 
-default_command="tmuxifier load-window dev"
 project_dir="$HOME/git/"
 school_subdir="school"
+new_session_name="CREATE NEW SESSION"
+
+# How to modify name if open and reverse it
+open_sub='s/$/ */'
+reverse_open_sub='s/ \*$//'
 
 if [[ $# -eq 1 ]]; then
     selected=$1
 else
+    # Repos
     dirs=$(find "$project_dir" -mindepth 1 -maxdepth 1 -type d -exec basename {} \; | sed "/$school_subdir/d")
-    school_dirs=$(find "$project_dir/$school_subdir" -mindepth 1 -maxdepth 1 -type d -exec basename  {} \; | sed "s/^/$school_subdir\//")
+    school_dirs=$(find "$project_dir/$school_subdir" -mindepth 1 -maxdepth 1 -type d -exec basename {} \; | sed "s/^/$school_subdir\//")
+
+    # Open sessions
     sessions=$(tmux list-sessions 2>/dev/null | cut -d : -f 1)
+
+    # Tmuxifier defined sessions (should be same as repo name to override)
     tmuxifiers=$(tmuxifier list-sessions)
-    list=$(echo "$dirs" && echo "$school_dirs" && echo "$sessions" && echo "$tmuxifiers")
-    selected=$(echo "$list" | sort | uniq | fzf)
+
+    # All openable sessions and just those not already open
+    openable=$( (echo "$dirs" && echo "$school_dirs" && echo "$tmuxifiers") | sort | uniq)
+    not_open=$(comm -2 -3 <(echo "$openable" | sort) <(echo "$sessions" | sort))
+
+    if [ -n "$sessions" ]; then
+        sessions_print=$(echo "$sessions" | sed "$open_sub")
+    else
+        sessions_print=""
+    fi
+    selected=$( (echo "$new_session_name" && if [ -n "$sessions_print" ]; then echo "$sessions_print"; fi && echo "$not_open") | fzf-tmux -p)
 fi
 
 if [[ -z $selected ]]; then
     exit 0
 fi
 
-selected_name=$(echo "$selected" | tr . _)
+selected_name=$(echo "$selected" | tr . _ | sed "$reverse_open_sub")
 tmux_running=$(pgrep tmux)
+
+if [ "$selected_name" = "$new_session_name" ]; then
+    printf "New session name: "
+    read -r selected_name
+fi
 
 if [[ -n $TMUX ]] || [[ -n $tmux_running ]]; then
     if tmux has-session -t="$selected_name" 2>/dev/null; then
         :
     elif tmuxifier list-sessions | grep -q "$selected"; then
         tmuxifier load-session "$selected" 2>/dev/null
-        # exit 0 # Tmuxifier auto-attaches
+        # exit 0
     else
         target_dir="$project_dir""$selected"
-        tmux new-session -ds "$selected_name" -c "$target_dir" "$default_command"
+        tmux new-session -ds "$selected_name" -c "$target_dir"
     fi
 else
     if tmuxifier list-sessions | grep -q "$selected"; then
@@ -40,10 +63,11 @@ else
         exit 0 # Tmuxifier auto-attaches
     else
         target_dir="$project_dir""$selected"
-        tmux new-session -s "$selected_name" -c "$target_dir" "$default_command"
+        tmux new-session -s "$selected_name" -c "$target_dir"
     fi
 fi
 
+# TODO: attach if runninig in floating window
 if [[ -n $TMUX ]]; then
     tmux switch-client -t "$selected_name"
 elif [[ -n $tmux_running ]]; then
