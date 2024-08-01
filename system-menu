@@ -5,8 +5,9 @@ lock="󰌾 lock"
 reboot="󰜉 reboot"
 exit="󰈆 exit"
 suspend="󰤄 suspend"
+hibernate=" hibernate"
 
-selected="$( (echo "$suspend" && echo "$lock" && echo "$exit" && echo "$shutdown" && echo "$reboot") | dmenu)"
+selected="$( (echo "$suspend" && echo "$lock" && echo "$hibernate" && echo "$exit" && echo "$shutdown" && echo "$reboot") | dmenu)"
 
 case $selected in
     "")
@@ -26,6 +27,9 @@ case $selected in
         ;;
     "$reboot")
         reboot
+        ;;
+    "$hibernate")
+        i3lock -c 000000 && systemctl hibernate
         ;;
     *)
         echo "No match"
