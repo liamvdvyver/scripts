@@ -1,14 +1,15 @@
 #!/bin/bash
 
-KBD_DEV=$(find /dev/input/by-path/*kbd* | rofi -dmenu)
-
-if [ -z "$KBD_DEV" ]; then
-    exit 0
-fi
+all_boards="$(udevadm info /dev/input/event* | awk -v RS= "/E: ID_INPUT_KEYBOARD=1\n/" ORS="\n\n" | grep 'E: DEVNAME=.*' | sed 's/E: DEVNAME=\(.*\)/\1/')"
 
 killall kmonad
-export KBD_DEV
-KBDCFG=$(envsubst < ~/.config/kmonad/default.kbd)
 
-nohup kmonad <(echo "$KBDCFG") >/dev/null &
+for i in $all_boards; do
+    echo "found $i"
+    KBD_DEV="$i"
+    export KBD_DEV
+    KBDCFG=$(envsubst <~/.config/kmonad/default.kbd)
+    kmonad <(echo "$KBDCFG") >/dev/null &
+done
+
 exit 0
