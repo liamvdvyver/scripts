@@ -1,25 +1,12 @@
 #!/usr/bin/env bash
 # From sponja23/fzf-calibre
 
-calibredb list \
-    --line-width 10000 \
-    --fields title,authors,formats \
-    --separator=\\ |
-    tail -n +2 |
-    awk -F\\ '
-        function trim(field) {
-            gsub(/^ +| +$/, "", field)
-            return field
-        }
-        {print $1 "\\" $4 "\\" trim($2) " - \033[1;36m" trim($3) "\033[0m"}' |
-    fzf-tmux -p80%,60% -- \
-        --layout=reverse --multi --height=50% --min-height=20 --border \
-        --ansi --color='header:italic:underline' \
-        --preview-window='right,50%,border-left' \
+calibredb list --for-machine calibredb list --fields title,authors,formats |
+    jq -cr '.[] | "\(.title) - \(.authors)\u001f\(.formats[0])"' |
+    fzf -- \
         --prompt="Calibre> " \
-        -d\\ \
-        --with-nth=3 \
-        --preview 'calibredb show_metadata {1}' |
-    cut -d\\ -f 2 |
-    sed -e "s/^\[/'/" -e "s/\]$/'/" |
-    (xargs xdg-open >/dev/null 2>&1 &)
+        -d'\x1f' \
+        --with-nth=1 |
+    cut -d $'\x1f' -f 2 |
+    tr '\n' '\0' |
+    (xargs -0r xdg-open >/dev/null 2>&1 &)
