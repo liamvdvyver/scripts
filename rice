@@ -350,14 +350,7 @@ cat $flameconf
 
 # SET WALLPAPER ------------------------------------------------------------ {{{
 
-# Set nitrogen config location and regex for wallpaper directory:
-papedir=~/.config/rice/papes/
-wallpaper="$(ls "$papedir$theme."*)"
-
-if [ -f "$(which pape)" ] && [ "$wallpaper" ]; then
-    pape "$wallpaper" && \
-    echo "wallpaper: $wallpaper"
-fi
+pape -s
 
 # }}}
 

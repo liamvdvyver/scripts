@@ -1,34 +1,61 @@
 #!/bin/sh
 
-selected="$(printf 'light\ndark\ntoggle\nsolid\nwallpaper\nselect wallpaper\nselect theme' | dmenu)"
+selected="$(printf 'light\ndark\ntoggle\nsolid\nwallpaper\nselect wallpaper\nselect theme\nselect colour' | dmenu)"
 
 case $selected in
-    "")
-        exit 0
+"")
+    exit 0
+    ;;
+"light")
+    rice --light
+    pape --solid
+    ;;
+"dark")
+    rice --dark
+    pape --solid
+    ;;
+"toggle")
+    rice --toggle
+    pape --solid
+    ;;
+"solid")
+    pape --solid
+    ;;
+"wallpaper")
+    pape --riced
+    ;;
+"select wallpaper")
+    $TERMINAL --name __scratchpad -e pape -i ~/Documents/papes/
+    ;;
+"select theme")
+    rice "$(rice --list | dmenu)"
+    pape --solid
+    ;;
+"select colour")
+    colour="$(printf 'win3.0\nwin95\nwin98\nxna\nblack\nsage' | dmenu)"
+    case $colour in
+    "win3.0")
+        pape -s "#c0c0c0"
         ;;
-    "light")
-        rice --light
+    "win95")
+        pape -s "#008080"
         ;;
-    "dark")
-        rice --dark
+    "win98")
+        pape -s "#000080"
         ;;
-    "toggle")
-        rice --toggle
+    "xna")
+        pape -s "#6495ED"
         ;;
-    "solid")
-        pape --solid
+    "black")
+        pape -s "#000000"
         ;;
-    "wallpaper")
-        pape --riced
+    "sage")
+        pape -s "#9CAF88"
         ;;
-    "select wallpaper")
-        $TERMINAL --name __scratchpad -e pape -i ~/Pictures/papes/
-        ;;
-    "select theme")
-        rice "$(rice --list | dmenu)"
-        ;;
-    *)
-        echo "No match"
-        exit 1
-        ;;
+    esac
+    ;;
+*)
+    echo "No match"
+    exit 1
+    ;;
 esac

@@ -1,5 +1,5 @@
-#!/bin/sh
-# Change wallapaper with xwallpaper
+#!/bin/env bash
+# Change wallapaper with hsetroot
 
 usage="usage: pape <file> [--interactive]"
 papeconf=~/.config/rice/pape
@@ -15,12 +15,15 @@ fi
 if [ "$1" = "--interactive" ] || [ "$1" = "-i" ]; then
     prompt="1"
 elif [ "$1" = "--solid" ] || [ "$1" = "-s" ]; then
-    hsetroot -solid "$(xrdb -query | grep '^\*background' | cut -f 2)"
-    exit
+    if [ "$2" ]; then
+        configured="$2"
+    else
+        configured="$(xrdb -query | grep '^\*background' | cut -f 2)"
+    fi
 elif [ "$1" = "--riced" ] || [ "$1" = "-r" ]; then
-    pape="$(cat $XDG_CONFIG_HOME/rice/pape)"
+    configured="$(cat $papeconf)"
 elif [ "$1" ]; then
-    pape="$1"
+    configured="$1"
 else
     echo "$usage"
     exit
@@ -28,19 +31,27 @@ fi
 
 if [ "$prompt" = "1" ]; then
     if [ -f "$(which fzfimg.sh)" ]; then
-        pape="$(find "$papedir" -type f | sed '/\.gif$/d' | fzfimg.sh | xargs readlink -f)"
+        configured="$(find "$papedir" -type f | fzfimg.sh | xargs -0 readlink -f)"
     elif [ -f "$(which fzf-ueberzogen.sh)" ]; then
-        pape="$(find "$papedir" -type f | sed '/\.gif$/d' | fzf-ueberzogen.sh | xargs readlink -f)"
+        configured="$(find "$papedir" -type f | fzf-ueberzogen.sh | xargs -0 readlink -f)"
     else
-        pape="$(find "$papedir" -type f | sed '/\.gif$/d' | fzf | xargs readlink -f)"
+        configured="$(find "$papedir" -type f | fzf | xargs -0 readlink -f)"
     fi
 fi
 
-if [ -f "$pape" ]; then
-    # xwallpaper --no-randr --zoom "$pape"
-    # xwallpaper --output "$display" --zoom "$pape"
-    xwallpaper --zoom "$pape"
-    echo "$pape" > $papeconf
+if [[ -f "$configured" ]]; then
+
+        # Determine size
+        sz="$(exiv2 "$configured" 2>/dev/null | grep "^Image size" | cut -f 2 -d ':' | cut -f 2 -d ' ')"
+        if [ "$sz" -gt "1000" ]; then
+            hsetroot -fill "$configured"
+        else
+            hsetroot -tile "$configured"
+        fi
+elif [ -n "$(echo "$configured" | grep "^#")" ]; then
+    hsetroot -solid "$configured"
 else
-    echo "$pape not found"
+    echo "$configured not found"
+    exit
 fi
+echo "$configured" > $papeconf
