@@ -23,7 +23,8 @@ case $selected in
         shutdown now
         ;;
     "$exit")
-        i3 exit
+        # i3 exit
+        ~/git/xwmux/build/xwmux-ctl exit
         ;;
     "$reboot")
         reboot
