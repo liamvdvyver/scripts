@@ -6,7 +6,7 @@ shopt -s nullglob globstar
 typeit=0
 regex=".*"
 while [[ -n "$1" ]]; do
-    if [[ $1 == "--type" || $1 -- "-t" ]]; then
+    if [[ $1 == "--type" || $1 == "-t" ]]; then
         typeit=1
         shift
     elif [[ $1 == "--user" || $1 == "-u" ]]; then
