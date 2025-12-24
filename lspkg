@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # List installed groups and standalone packages
 
 groups=$(for G in $(pacman -Qg | cut -d' ' -f1 | sort -u); do

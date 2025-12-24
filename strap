@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env sh
 # Bootstrap system after fresh Arch install
 # Note: first set up user account to run script
 

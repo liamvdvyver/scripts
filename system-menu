@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env sh
 
 shutdown="󰐥 shut down"
 lock="󰌾 lock"
@@ -8,6 +8,11 @@ suspend="󰤄 suspend"
 hibernate=" hibernate"
 
 selected="$( (echo "$suspend" && echo "$lock" && echo "$hibernate" && echo "$exit" && echo "$shutdown" && echo "$reboot") | dmenu)"
+
+exit_wm() {
+    i3 exit
+    xwmux-ctl exit
+}
 
 case $selected in
     "")
@@ -23,8 +28,7 @@ case $selected in
         shutdown now
         ;;
     "$exit")
-        # i3 exit
-        ~/git/xwmux/build/xwmux-ctl exit
+        exit_wm
         ;;
     "$reboot")
         reboot

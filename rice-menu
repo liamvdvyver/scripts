@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env sh
 
 selected="$(printf 'light\ndark\ntoggle\nsolid\nwallpaper\nselect wallpaper\nselect theme\nselect colour' | dmenu)"
 

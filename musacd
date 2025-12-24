@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env sh
 # Extract dsf from SACD iso and move files
 
 file="$1"

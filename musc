@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Clean music directory prior to tagging and sorting
 
 shopt -s globstar

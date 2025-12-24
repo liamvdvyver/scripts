@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 all_boards="$(udevadm info /dev/input/event* | awk -v RS= "/E: ID_INPUT_KEYBOARD=1\n/" ORS="\n\n" | grep 'E: DEVNAME=.*' | sed 's/E: DEVNAME=\(.*\)/\1/')"
 

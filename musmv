@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env sh
 # Sort music files tagged by picards
 # set $file
 file="$1"

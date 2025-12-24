@@ -1,4 +1,4 @@
-#!/bin/env sh
+#!/usr/bin/env sh
 # Connect to ANU VPN
 
 usage="usage: gp [-d] [--disconnect]"

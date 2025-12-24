@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env sh
 # Take screenshot of primary xrandr display with scrot
 
 scrotdir=~/Pictures/scrot/

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env sh
 # Encrypt, commit and push dotfiles with yadm
 
 gitdir=~/git/dotfiles-secret

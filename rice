@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env sh
 # Source Xresources and copy configuration to config files
 # Themes and documentation at gitlab.com/liamvdvyver/dotfiles
 

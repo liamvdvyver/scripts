@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env sh
 # Get neccessary files for bootstrap script
 
 if [ "$1" ]; then

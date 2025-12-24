@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env sh
 
 quickmarks=$(cat "$HOME/.config/qutebrowser/quickmarks")
 search_prefix="www.duckduckgo.com/&q="
