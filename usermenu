@@ -4,20 +4,27 @@
 shopt -s nullglob globstar
 
 typeit=0
-if [[ $1 == "--type" ]]; then
-    typeit=1
-    shift
-fi
+regex=".*"
+while [[ -n "$1" ]]; do
+    if [[ $1 == "--type" || $1 -- "-t" ]]; then
+        typeit=1
+        shift
+    elif [[ $1 == "--user" || $1 == "-u" ]]; then
+        regex='user(name)?: \K.*'
+        echo woo
+        shift
+    fi
+done
 
 prefix=${PASSWORD_STORE_DIR-~/.password-store}
 password=$(cd "$prefix" && find -- * -type f -iname "*.gpg" -exec sh -c 'printf "%s\n" "${@%.gpg}"' _ {} + | dmenu -i "$@")
 
 [[ -n $password ]] || exit
 
+result=$(pass show "$password" | grep -o -P "$regex" | head -n 1)
+
 if [[ $typeit -eq 0 ]]; then
-    username=$(pass show "$password" | grep -o -P "user(name)?: \K.*")
-    echo "$username" | xclip  # send the username to middle button paste
+    echo $result | xclip  # send to middle button paste
 else
-    username=$(pass show "$password" | grep -o -P "user(name)?: \K.*")
-    xdotool type "$username" # type the username
+    xdotool type $result # type
 fi
