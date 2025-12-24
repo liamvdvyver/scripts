@@ -2,7 +2,7 @@
 # taken from github.com/ThePrimeagen/.dotfiles
 # adapted to provide man, tldr or hoogle results
 
-usage="Usage: tmux-cht.sh [tldr] [cht.sh] [man]"
+usage="Usage: docs [tldr] [cht.sh] [man] [hoogle]"
 
 if [[ -n "$1" ]]; then
     mode="$1"
@@ -66,8 +66,4 @@ else
     exit 1
 fi
 
-if [[ -n $TMUX ]]; then
-    tmux neww bash -c "$command"
-else
-    eval "$command"
-fi
+eval "$command"
