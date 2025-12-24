@@ -4,8 +4,8 @@
 
 # INITAL VARIABLES --------------------------------------------------------- {{{
 
-xres=~/.config/X11/Xresources  # location of Xresources config
-xdir=~/.config/rice/themes/ # location of theme files
+xres=~/.config/X11/Xresources # location of Xresources config
+xdir=~/.config/rice/themes/   # location of theme files
 
 if [ ! -f $xres ]; then # warn if not found (required for script)
     echo "no Xresources configuration found at $xres"
@@ -45,7 +45,7 @@ fi
 
 # Parse $2:
 if [ "$theme" ] && [ "$2" = "--light" ] || [ "$2" = "-l" ]; then # --light, theme set -> set
-    bg="light"                                  # -> $theme and $bg as per spec
+    bg="light"                                                   # -> $theme and $bg as per spec
     theme="$theme""-light"
 elif [ "$theme" ] && [ "$2" = "--dark" ] || [ "$2" = "-d" ]; then # --dark, theme set -> set dark $bg
     bg="dark"
@@ -71,7 +71,7 @@ if [ "$toggle" ]; then # if toggle is set, set $oldtheme literally
     echo old
     echo "$oldtheme"
     echo "$oldbg"
-    if [ "$toggle" = "1"  ]; then # toggling between dark and light
+    if [ "$toggle" = "1" ]; then # toggling between dark and light
         if [ "$oldbg" = "dark" ]; then
             theme="$oldtheme""-light"
             bg="light"
@@ -105,8 +105,8 @@ fi
 
 xthemepath="$(echo $xdir | sed 's/\//\\\//g')"
 
-sed -i "s/^\(#include \)\".\+\"$/\1\"$xthemepath$xtheme\"/" $xres && \
-    xrdb $xres 2>/dev/null && \
+sed -i "s/^\(#include \)\".\+\"$/\1\"$xthemepath$xtheme\"/" $xres &&
+    xrdb $xres 2>/dev/null &&
     echo "updated $xres"
 
 bg=$(xrdb -query | grep 'rice.background:\s.\+$' | cut -f 2)
@@ -139,26 +139,26 @@ gtk3conf=~/.config/gtk-3.0/settings.ini
 
 # Set themes in config files
 if [ -f "$gtk2conf" ]; then
-    sed -i "s/^\(gtk-theme-name=\)\"[a-zA-Z\-]*\"$/\1\"$gtk\"/" "$gtk2conf" && \
-    sed -i "s/^\(gtk-icon-theme-name=\)\"[a-zA-Z\-]*\"$/\1\"$icon\"/" "$gtk2conf" && \
-    echo "updated $gtk2conf"
+    sed -i "s/^\(gtk-theme-name=\)\"[a-zA-Z\-]*\"$/\1\"$gtk\"/" "$gtk2conf" &&
+        sed -i "s/^\(gtk-icon-theme-name=\)\"[a-zA-Z\-]*\"$/\1\"$icon\"/" "$gtk2conf" &&
+        echo "updated $gtk2conf"
 fi
 
 if [ -f $gtk3conf ]; then
-    sed -i "s/^\(gtk-theme-name=\)[a-zA-Z\-]*$/\1$gtk/" $gtk3conf && \
-    sed -i "s/^\(gtk-icon-theme-name=\)[a-zA-Z\-]*$/\1$icon/" $gtk3conf && \
-    echo "updated $gtk3conf"
+    sed -i "s/^\(gtk-theme-name=\)[a-zA-Z\-]*$/\1$gtk/" $gtk3conf &&
+        sed -i "s/^\(gtk-icon-theme-name=\)[a-zA-Z\-]*$/\1$icon/" $gtk3conf &&
+        echo "updated $gtk3conf"
 fi
 
 # }}}
 
 # SET VIM COLORSCHEME ------------------------------------------------------ {{{
 
-vimconf=~/.config/nvim/init.lua                      # set location of MYVIMRC
-vimplug=~/.config/nvim/lua/plg/plugins/lualine.lua  # lua plugin config
+vimconf=~/.config/nvim/init.lua               # set location of MYVIMRC
+vimplug=~/.config/nvim/lua/plg/ui/lualine.lua # lua plugin config
 
 # Set $vimtheme and $vimbg from xresources:
-vimtheme="$(xrdb -query | grep '^rice\.nvim\.theme:\s[a-z0-9]\+$' | cut -f 2)"
+vimtheme="$(xrdb -query | grep '^rice\.nvim\.theme:\s[a-z0-9\-]\+$' | cut -f 2)"
 vimbg="$(xrdb -query | grep '^rice\.nvim\.background:\s[a-z0-9]\+$' | cut -f 2)"
 lualinetheme="$(xrdb -query | grep '^rice\.lualine\.theme:\s[-_a-z0-9]\+$' | cut -f 2)"
 
@@ -168,23 +168,23 @@ if [ "$vimconf" ]; then
         sed -i "s/^\(vim.o.background = \)\"[a-z]\+\"$/\1\"$vimbg\"/" $vimconf
     fi
     if [ "$vimtheme" ]; then
-        sed -i "s/^\(vim.cmd.colorscheme\)(\"[a-z0-9]\+\")$/\1(\"$vimtheme\")/" $vimconf && \
-        echo "nvim theme: $vimtheme"
+        sed -i "s/^\(vim.cmd.colorscheme\)(\"[a-z0-9\-]\+\")$/\1(\"$vimtheme\")/" $vimconf &&
+            echo "nvim theme: $vimtheme"
         echo "updated $vimconf"
     fi
     if [ "$vimtheme" ]; then
-        sed -i "s/^\(vim.cmd.colorscheme\)(\"[a-z0-9]\+\")$/\1(\"$vimtheme\")/" $vimconf && \
-        echo "nvim theme: $vimtheme"
+        sed -i "s/^\(vim.cmd.colorscheme\)(\"[a-z0-9]\+\")$/\1(\"$vimtheme\")/" $vimconf &&
+            echo "nvim theme: $vimtheme"
     fi
 fi
 
 if [ "$vimplug" ]; then
     if [ "$lualinetheme" ]; then
-        sed -i 's/^\(\s\+theme = \)\"[-_a-z0-9]\+\",$/\1\"'"$lualinetheme"'\",/' $vimplug && \
-        echo "lualine theme: $lualinetheme"
+        sed -i 's/^\(\s\+theme = \)\"[-_a-z0-9]\+\",$/\1\"'"$lualinetheme"'\",/' $vimplug &&
+            echo "lualine theme: $lualinetheme"
     else
-        sed -i 's/^\(\s\+theme = \)\"[-_a-z0-9]\+\",$/\1\"auto\",/' $vimplug && \
-        echo "lualine theme: default"
+        sed -i 's/^\(\s\+theme = \)\"[-_a-z0-9]\+\",$/\1\"auto\",/' $vimplug &&
+            echo "lualine theme: default"
     fi
 fi
 
@@ -195,18 +195,18 @@ fi
 doomconf=~/.config/doom/config.el # Set doom config location
 doomtheme="$(xrdb -query | grep '^rice\.doom\.theme:\s[-a-z0-9]\+$' | cut -f 2)" ||
 
-# Defaults if undefined
-if ! [ "$doomtheme" ]; then
-    if [ "$bg" = "light" ]; then
-        doomtheme="doom-gruvbox"
-    elif [ "$bg" = "light" ]; then
-        doomtheme="doom-gruvbox-light"
+    # Defaults if undefined
+    if ! [ "$doomtheme" ]; then
+        if [ "$bg" = "light" ]; then
+            doomtheme="doom-gruvbox"
+        elif [ "$bg" = "light" ]; then
+            doomtheme="doom-gruvbox-light"
+        fi
     fi
-fi
 
 if [ "$doomconf" ]; then
-    sed -i "s/^\((setq doom-theme '\)[-a-z0-9]\+)$/\1$doomtheme)/" $doomconf && \
-    echo "DOOM emacs theme: $doomtheme"
+    sed -i "s/^\((setq doom-theme '\)[-a-z0-9]\+)$/\1$doomtheme)/" $doomconf &&
+        echo "DOOM emacs theme: $doomtheme"
 fi
 
 # }}}
@@ -226,8 +226,8 @@ kittyregex='^\*\(color[0-9]\{1,2\}\|background\|foreground\|cursorColor\):\s#[a-
 # ^*cursorColor: #XXXXXX$ --> ^cursor #XXXXXX$
 if [ -f $kittyconf ] && grep -q "^$warningline$" $kittyconf; then
     sed -i "/^$warningline$/q" $kittyconf
-    echo "" >> $kittyconf
-    xrdb -query | grep "$kittyregex" | cut -c 2- | sed "s/:\s/ /" | sed -r "s/^cursorColor/cursor/" >> $kittyconf
+    echo "" >>$kittyconf
+    xrdb -query | grep "$kittyregex" | cut -c 2- | sed "s/:\s/ /" | sed -r "s/^cursorColor/cursor/" >>$kittyconf
     echo "updated $kittyconf"
 fi
 
@@ -326,7 +326,7 @@ if [ -f $dunstconf ] && grep -q "^$warningline$" $dunstconf; then
         echo "$dunstbgline"
         echo "$dunstfgline"
         echo "$dunstfcline"
-    } >> $dunstconf && \
+    } >>$dunstconf &&
         echo "updated $dunstconf"
 fi
 
@@ -345,7 +345,6 @@ fi
 
 cat $flameconf
 
-
 # }}}
 
 # SET WALLPAPER ------------------------------------------------------------ {{{
@@ -357,68 +356,80 @@ pape -s
 # RELOAD ------------------------------------------------------------------- {{{
 
 # Restart i3:
-if [ "$(command -v i3-msg)" ]; then i3-msg restart && echo "reloaded i3"; fi # restart i3 if installed
+if [ "$(command -v i3-msg)" ]; then (i3-msg restart && echo "reloaded i3") & fi # restart i3 if installed
 
 # Send SIGUSR1 to runnin kitty instances (reloads config):
 if [ "$(pgrep kitty)" ]; then
-    pgrep kitty | xargs kill -s USR1 && echo "reloaded kitty"
+    (pgrep kitty | xargs kill -s USR1 && echo "reloaded kitty") &
 fi
 
 # Find nvim server sockets and remote send command to reload config:
 nvim_socks="$(find /run/ -regex "/run/user/1000/nvim\.[a-zA-Z0-9]+\.0" -print 2>/dev/null | paste -s -d ' ')"
 if [ -n "$(pgrep nvim)" ]; then
-    echo "$nvim_socks" | xargs -r -n 1 nvim --remote-send "<esc>:source \$MYVIMRC<CR><CR>" --server && \
-    echo "reloaded nvim"
-    if [ "$lualinetheme" ]; then
-        echo "$nvim_socks" | xargs -r -n 1 nvim --remote-send "<esc>:lua require('lualine').setup({options = {theme = '$lualinetheme'}})<CR><CR>" --server && \
-        echo "reloaded nvim plugins"
-    fi
-fi
-
-# Send emacs server new theme if running
-if [ "$(pgrep emacs)" ] && [ "$doomtheme" ]; then
-    emacsclient -e "(load-theme '$doomtheme t)" && \
-    echo "reloaded emacs"
-fi
-
-# Find zathura instances and source config with dbus:
-if [ "$(pgrep zathura)" ]; then
-    pgrep zathura | xargs -I '{}' dbus-send --type=method_call --dest=org.pwmt.zathura.PID-'{}' /org/pwmt/zathura org.pwmt.zathura.ExecuteCommand string:source && \
-    echo "reloaded zathura"
+    (
+        echo "$nvim_socks" | xargs -r -n 1 nvim --remote-send "<cmd>source \$MYVIMRC<CR><CR>" --server &&
+            echo "reloaded nvim"
+        if [ "$lualinetheme" ]; then
+            echo "$nvim_socks" | xargs -r -n 1 nvim --remote-send "<cmd>lua require('lualine').setup({options = {theme = '$lualinetheme'}})<CR><CR>" --server &&
+                echo "reloaded nvim plugins"
+        fi
+    ) &
 fi
 
 # Source qutebrowser config if running:
 if [ "$(pgrep qutebrowser)" ]; then
-    qutebrowser ':config-source'
-    echo "reloaded qutebrowser"
+    (
+        qutebrowser ':config-source'
+        echo "reloaded qutebrowser"
+    ) &
+fi
+
+# Send emacs server new theme if running
+if [ "$(pgrep emacs)" ] && [ "$doomtheme" ]; then
+    (emacsclient -e "(load-theme '$doomtheme t)" &&
+        echo "reloaded emacs") &
+fi
+
+# Find zathura instances and source config with dbus:
+if [ "$(pgrep zathura)" ]; then
+    (pgrep zathura | xargs -I '{}' dbus-send --type=method_call --dest=org.pwmt.zathura.PID-'{}' /org/pwmt/zathura org.pwmt.zathura.ExecuteCommand string:source &&
+        echo "reloaded zathura") &
 fi
 
 # Restart dunst
 if [ "$(pgrep dunst)" ]; then
-    pkill -f dunst
-    nohup dunst --startup_notification true > /dev/null 2>&1 &
-    echo "restarted dunst"
+    (
+        pkill -f dunst
+        nohup dunst --startup_notification true >/dev/null 2>&1 &
+        echo "restarted dunst"
+    ) &
 fi
 
 # Restart flameshot
 if [ "$(pgrep flameshot)" ]; then
-    pkill -f flameshot
-    nohup flameshot > /dev/null 2>&1 &
-    echo "restarted flameshot"
+    (
+        pkill -f flameshot
+        nohup flameshot >/dev/null 2>&1 &
+        echo "restarted flameshot"
+    ) &
 fi
 
 # Restart nm-applet
 if [ "$(pgrep nm-applet)" ]; then
-    pkill -f nm-applet
-    nohup nm-applet > /dev/null 2>&1 &
-    echo "restarted nm-applet"
+    (
+        pkill -f nm-applet
+        nohup nm-applet >/dev/null 2>&1 &
+        echo "restarted nm-applet"
+    ) &
 fi
 
 # Restart blueman-applet
 if [ "$(pgrep blueman-applet)" ]; then
-    pkill -f blueman-applet
-    nohup blueman-applet > /dev/null 2>&1 &
-    echo "restarted blueman-applet"
+    (
+        pkill -f blueman-applet
+        nohup blueman-applet >/dev/null 2>&1 &
+        echo "restarted blueman-applet"
+    ) &
 fi
 
 # }}}
