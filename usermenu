@@ -3,21 +3,35 @@
 
 shopt -s nullglob globstar
 
-typeit=0
+typeit=1
+enter=0
 regex=".*"
+password=""
 while [[ -n "$1" ]]; do
-    if [[ $1 == "--type" || $1 == "-t" ]]; then
-        typeit=1
-        shift
+    if [[ $1 == "--copy" || $1 == "-c" ]]; then
+        typeit=0
     elif [[ $1 == "--user" || $1 == "-u" ]]; then
         regex='user(name)?: \K.*'
         echo woo
+    elif [[ $1 == "--target" || $1 == "-t" ]]; then
         shift
+        [[ -n "$1" ]] || exit 1
+        password=$1
+    elif [[ $1 == "--current-user-prefix" || $1 == "-p" ]]; then
+        shift
+        [[ -n "$1" ]] || exit 1
+        password="$1/$(uname -n)/$(whoami)"
+    elif [[ $1 == "--enter" || $1 == "-e" ]]; then
+        enter=1
     fi
+    shift
 done
 
 prefix=${PASSWORD_STORE_DIR-~/.password-store}
-password=$(cd "$prefix" && find -- * -type f -iname "*.gpg" -exec sh -c 'printf "%s\n" "${@%.gpg}"' _ {} + | dmenu -i "$@")
+
+if [[ -z "$password" ]]; then
+    password=$(cd "$prefix" && find -- * -type f -iname "*.gpg" -exec sh -c 'printf "%s\n" "${@%.gpg}"' _ {} + | dmenu -i "$@")
+fi
 
 [[ -n $password ]] || exit
 
@@ -26,5 +40,8 @@ result=$(pass show "$password" | grep -o -P "$regex" | head -n 1)
 if [[ $typeit -eq 0 ]]; then
     echo $result | xclip  # send to middle button paste
 else
-    xdotool type $result # type
+    xdotool type --clearmodifiers $result # type
+    if [[ $enter -eq 1 ]]; then
+        xdotool key --clearmodifiers 'Return'
+    fi
 fi
