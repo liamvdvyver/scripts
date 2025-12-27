@@ -377,7 +377,7 @@ if [ -n "$(pgrep nvim)" ]; then
 fi
 
 # Source qutebrowser config if running:
-if [ "$(pgrep qutebrowser)" ]; then
+if [ "$(pgrep QtWebEngineProc || pgrep qutebrowser)" ]; then
     (
         qutebrowser ':config-source'
         echo "reloaded qutebrowser"
