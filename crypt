@@ -1,8 +1,8 @@
 #!/usr/bin/env sh
 # Encrypt, commit and push dotfiles with yadm
 
-gitdir=~/git/dotfiles-secret
-yadmdir=~/.local/share/yadm
+gitdir=$SECRET_DOT_DIR
+yadmdir=$XDG_DATA_HOME/yadm
 usage="usage: crypt [--decrypt/--encrypt] [passphrase]"
 
 while [ -n "$1" ]; do

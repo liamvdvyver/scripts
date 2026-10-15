@@ -11,14 +11,17 @@ else
     mode=$(echo "$mode_options" | fzf)
 fi
 
+apropos_to_man_sed_exp='s/^\(.*\) (\(.\+\)) \+- .*/man \2 \1/'
+
 if [[ "$mode" == man ]]; then
 
-    selected="$(man -k "" | cut -f 1 -d ' ' | fzf)"
+    selected="$(man -k "" | fzf -n 1 \
+        --preview "echo {} | sed '$apropos_to_man_sed_exp' | sh")"
+
     if [[ -z $selected ]]; then
         exit 0
     fi
-
-    command="man $selected"
+    command=$(echo "$selected" | sed $apropos_to_man_sed_exp)
 
 elif [[ "$mode" == "tldr" ]]; then
 
